@@ -1,0 +1,41 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# ==================================
+# Supabase CLI Local Environment
+# ==================================
+# Archivo de configuración local generado (contiene claves/URLs locales)
+supabase/config.json
+
+# Directorio de datos de Docker (base de datos local, logs, etc.)
+supabase/db/volumes/
+
+# ==================================
+# Claves y Variables de Entorno
+# ==================================
+# Ignorar el archivo de entorno local (contiene secretos/keys)
+.env.local
+.env*.local
+.env.development.local
