@@ -91,8 +91,8 @@ onMounted(() => {
     }
   };
 
-  const storedPomodoro = localStorage.getItem("currPomodoro") || "null";
-  const pomodoroFromLocalStorage = JSON.parse(storedPomodoro);
+  const storedPomodoro = localStorage.getItem("currPomodoro");
+  const pomodoroFromLocalStorage = JSON.parse(storedPomodoro || "null");
   if (pomodoroFromLocalStorage?.state !== "finished") {
     currPomodoro.value = pomodoroFromLocalStorage;
   }
