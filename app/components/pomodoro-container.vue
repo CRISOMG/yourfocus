@@ -1,30 +1,33 @@
 <template>
   <section class="flex flex-col items-center justify-center h-screen">
     <div class="flex flex-col items-center justify-center border rounded">
-      <div class="flex items-center justify-center p-4 border-b">
-        <h1 class="text-4xl">
-          {{ clockInMinutes }}
-        </h1>
+      <div class="flex flex-row border-b">
+        <div class="flex items-center justify-center p-4">
+          <h1 class="text-4xl">
+            {{ clockInMinutes }}
+          </h1>
+        </div>
+        <div class="flex items-center justify-center p-4">
+          <UButton
+            v-if="currPomodoro?.state !== 'current'"
+            @click="handleStartPomodoro(props.user_id)"
+            >Start</UButton
+          >
+          <UButton
+            v-if="currPomodoro?.state === 'current'"
+            @click="handlePausePomodoro"
+            >Pause</UButton
+          >
+          <UButton
+            v-if="currPomodoro?.state === 'current'"
+            class="ml-4"
+            color="error"
+            icon="heroicons-solid:x-mark"
+            @click="handleResetPomodoro"
+          />
+        </div>
       </div>
-      <div class="flex items-center justify-center p-4">
-        <UButton
-          v-if="currPomodoro?.state !== 'current'"
-          @click="handleStartPomodoro(props.user_id)"
-          >Start</UButton
-        >
-        <UButton
-          v-if="currPomodoro?.state === 'current'"
-          @click="handlePausePomodoro"
-          >Pause</UButton
-        >
-        <UButton
-          v-if="currPomodoro?.state === 'current'"
-          class="ml-4"
-          color="error"
-          icon="heroicons-solid:x-mark"
-          @click="handleResetPomodoro"
-        />
-      </div>
+      <TimeGrid :pomodoros="pomodorosListToday" />
     </div>
   </section>
 </template>
