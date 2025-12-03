@@ -1,9 +1,15 @@
-import type { Pomodoro, PomodoroCycle } from "~/types/Pomodoro";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { Pomodoro, PomodoroCycle, Tag } from "~/types/Pomodoro";
 import {
   hasCycleFinished,
   calculateTimelineFromNow,
 } from "~/utils/pomodoro-domain";
 
+function handleError(error: PostgrestError | null) {
+  if (error && error.code !== "PGRST116") {
+    throw error;
+  }
+}
 export const usePomodoroRepository = () => {
   const supabase = useSupabaseClient();
 
@@ -68,9 +74,7 @@ export const usePomodoroRepository = () => {
       .neq("state", "finished")
       .single();
 
-    if (error && error.code !== "PGRST116") {
-      throw error;
-    }
+    handleError(error);
     return data;
   }
   async function getOne(id: number) {
@@ -150,14 +154,14 @@ export const usePomodoroCycleRepository = () => {
   }
 
   async function update(id: number, pomodoroCycle: PomodoroCycle["Update"]) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("pomodoros_cycles")
       .update(pomodoroCycle)
       .eq("id", id)
       .select()
-      .single()
-      .throwOnError();
+      .single();
 
+    handleError(error);
     return data;
   }
 
@@ -177,5 +181,85 @@ export const usePomodoroCycleRepository = () => {
     update,
     getOne,
     getCurrent,
+  };
+};
+
+export const useTagRepository = () => {
+  const supabase = useSupabaseClient();
+
+  const fromTable = "tags";
+
+  async function getCurrent() {
+    const { data, error } = await supabase
+      .from(fromTable)
+      .select(
+        `
+            *,
+            pomodoros (
+              *,
+              tags (*)
+            )
+          `
+      )
+      .filter("state", "eq", "current")
+      .single();
+    if (error && error.code !== "PGRST116") {
+      throw error;
+    }
+
+    return data;
+  }
+
+  async function insert(tag: Tag["Insert"]) {
+    const { data } = await supabase
+      .from(fromTable)
+      .insert(tag)
+      .select()
+      .single()
+      .throwOnError();
+
+    return data;
+  }
+
+  async function update(id: number, tag: Tag["Update"]) {
+    const { data } = await supabase
+      .from(fromTable)
+      .update(tag)
+      .eq("id", id)
+      .select()
+      .single()
+      .throwOnError();
+
+    return data;
+  }
+
+  async function getOne(id: number) {
+    const { data } = await supabase
+      .from(fromTable)
+      .select()
+      .eq("id", id)
+      .single()
+      .throwOnError();
+
+    return data;
+  }
+
+  async function getOneByType(type: string) {
+    const { data } = await supabase
+      .from(fromTable)
+      .select()
+      .eq("type", type)
+      .single()
+      .throwOnError();
+
+    return data;
+  }
+
+  return {
+    insert,
+    update,
+    getOne,
+    getCurrent,
+    getOneByType,
   };
 };

@@ -17,7 +17,7 @@ export const usePomodoroUtils = () => {
     storeToRefs(pomodoroStore);
 
   const pomodoroRepository = usePomodoroRepository();
-  const { timer, startTimer, clockInMinutes } = useTimer();
+  const { timer, startTimer, clockInMinutes, setClockInSeconds } = useTimer();
 
   const pomodoroService = usePomodoroService();
   const toast = useSuccessErrorToast();
@@ -32,14 +32,26 @@ export const usePomodoroUtils = () => {
         handleFinishPomodoro();
       },
       syncAccSeconds: currPomodoro.value?.timelapse || 0,
+      clockStartInMinute: (currPomodoro.value?.expected_duration || 0) / 60,
     });
   }
   async function getCurrentPomodoro() {
     const upstreamPomodoro = await pomodoroRepository.getCurrentPomodoro();
 
-    if (upstreamPomodoro) {
+    if (upstreamPomodoro && upstreamPomodoro.state !== "finished") {
       currPomodoro.value = upstreamPomodoro;
       localStorage.setItem("currPomodoro", JSON.stringify(upstreamPomodoro));
+
+      const remainingSeconds =
+        upstreamPomodoro.timelapse <= upstreamPomodoro.expected_duration
+          ? upstreamPomodoro.expected_duration - upstreamPomodoro.timelapse
+          : 0;
+
+      if (remainingSeconds <= 0) {
+        return handleFinishPomodoro();
+      }
+
+      setClockInSeconds(remainingSeconds);
     }
 
     if (upstreamPomodoro?.state === "current") {
@@ -48,9 +60,11 @@ export const usePomodoroUtils = () => {
   }
   async function handleStartPomodoro(user_id: string) {
     if (!currPomodoro.value) {
+      const tag = await pomodoroService.getTagByCycleSecuense();
+
       const result = await pomodoroService.startPomodoro({
         user_id,
-        tagId: TagIdByType.FOCUS,
+        tagId: tag?.id,
       });
       await handleListPomodoros();
 
@@ -104,6 +118,7 @@ export const usePomodoroUtils = () => {
     }
 
     currPomodoro.value = null;
+    localStorage.removeItem("currPomodoro");
   }
   async function handleResetPomodoro() {
     if (
@@ -117,6 +132,9 @@ export const usePomodoroUtils = () => {
     if (timer.value) clearInterval(timer.value);
     await handleFinishPomodoro();
     await pomodoroService.finishCurrentCycle();
+    setClockInSeconds(
+      PomodoroDurationInSecondsByDefaultCycleConfiguration[TagIdByType.FOCUS]
+    );
     localStorage.removeItem("currPomodoro");
     currPomodoro.value = null;
   }

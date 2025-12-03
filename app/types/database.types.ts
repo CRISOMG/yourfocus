@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           cycle: number | null
-          expected_duration: number | null
+          expected_duration: number
           expected_end: string
           finished_at: string | null
           id: number
@@ -31,7 +31,7 @@ export type Database = {
         Insert: {
           created_at?: string
           cycle?: number | null
-          expected_duration?: number | null
+          expected_duration?: number
           expected_end?: string
           finished_at?: string | null
           id?: number
@@ -44,7 +44,7 @@ export type Database = {
         Update: {
           created_at?: string
           cycle?: number | null
-          expected_duration?: number | null
+          expected_duration?: number
           expected_end?: string
           finished_at?: string | null
           id?: number

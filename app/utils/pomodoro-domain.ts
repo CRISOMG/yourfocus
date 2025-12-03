@@ -14,6 +14,24 @@ export enum TagIdByType {
   LONG_BREAK = 3,
 }
 
+export enum TagType {
+  FOCUS = "focus",
+  BREAK = "break",
+  LONG_BREAK = "long-break",
+}
+
+export const TagTypeById = {
+  [TagIdByType.FOCUS]: "focus",
+  [TagIdByType.BREAK]: "break",
+  [TagIdByType.LONG_BREAK]: "long-break",
+};
+
+export const PomodoroDurationInSecondsByDefaultCycleConfiguration = {
+  [TagIdByType.FOCUS]: DEFAULT_POMODORO_DURATION_IN_MINUTES * 60,
+  [TagIdByType.BREAK]: DEFAULT_BREAK_DURATION_IN_MINUTES * 60,
+  [TagIdByType.LONG_BREAK]: DEFAULT_LONG_BREAK_DURATION_IN_MINUTES * 60,
+};
+
 export function hasCycleFinished(
   pomodoroTags: string[],
   requiredTags:
@@ -30,7 +48,9 @@ export function hasCycleFinished(
 }
 
 export function calculateTimelineFromNow(
-  pomodoroDuration: number = DEFAULT_POMODORO_DURATION_IN_MINUTES * 60
+  pomodoroDuration: number = PomodoroDurationInSecondsByDefaultCycleConfiguration[
+    TagIdByType.FOCUS
+  ]
 ) {
   const started_at = new Date();
   const expectedDate = new Date(started_at.getTime());
@@ -41,4 +61,20 @@ export function calculateTimelineFromNow(
     started_at: started_at.toISOString(),
     expected_end: expectedDate.toISOString(),
   };
+}
+
+export function calculateNextTagFromCycleSecuence({
+  currentSecuense,
+  secuense,
+}: {
+  currentSecuense: string[];
+  secuense: string[];
+}) {
+  const required_tags = secuense || DEFAULT_REQUIRED_TAGS_FOR_FINISH_CYCLE;
+
+  const nextTagType = required_tags.filter(
+    (tag) => !currentSecuense.includes(tag)
+  );
+
+  return nextTagType[0];
 }

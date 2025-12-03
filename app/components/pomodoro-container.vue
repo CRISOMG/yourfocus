@@ -86,21 +86,6 @@ onMounted(() => {
       }
     }
   };
-
-  const storedPomodoro = localStorage.getItem("currPomodoro");
-  const pomodoroFromLocalStorage = JSON.parse(storedPomodoro || "null");
-  if (pomodoroFromLocalStorage?.state !== "finished") {
-    currPomodoro.value = pomodoroFromLocalStorage;
-  }
-  if (currPomodoro.value) {
-    const totalSeconds = DEFAULT_POMODORO_DURATION_IN_MINUTES * 60;
-    const remainingSeconds = totalSeconds - currPomodoro.value.timelapse;
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
-    clockInMinutes.value = `${minutes.toString().padStart(2, "0")}:${seconds
-      .toString()
-      .padStart(2, "0")}`;
-  }
 });
 onUnmounted(() => {
   if (timer.value) clearInterval(timer.value);
