@@ -56,7 +56,7 @@ drop table "public"."pomodoros-taggeds";
     "created_at" timestamp with time zone not null default now(),
     "state" public."pomodoro-state",
     "user_id" uuid,
-    "required_tags" text[] default '{focus,break,long-break}'::text[]
+    "required_tags" text[] default '{focus,break,focus,long-break}'::text[]
       );
 
 

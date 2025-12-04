@@ -27,6 +27,10 @@ export const usePomodoroUtils = () => {
       onTick: () => {
         if (!currPomodoro.value) return;
         currPomodoro.value.timelapse += 1;
+
+        if (currPomodoro.value.timelapse % 10 === 0) {
+          handleSyncPomodoro();
+        }
       },
       onFinish: () => {
         handleFinishPomodoro();
@@ -138,6 +142,22 @@ export const usePomodoroUtils = () => {
     localStorage.removeItem("currPomodoro");
     currPomodoro.value = null;
   }
+  async function handleSyncPomodoro() {
+    if (!currPomodoro.value) {
+      return;
+    }
+
+    try {
+      const result = await pomodoroRepository.update(currPomodoro.value.id, {
+        timelapse: currPomodoro.value.timelapse,
+      });
+      currPomodoro.value = result;
+    } catch (error) {
+      console.error(error);
+
+      toast.addErrorToast({ title: error.type, description: error.message });
+    }
+  }
 
   async function handleListPomodoros() {
     try {
@@ -159,6 +179,7 @@ export const usePomodoroUtils = () => {
   }
 
   return {
+    handleSyncPomodoro,
     handleStartPomodoro,
     handlePausePomodoro,
     handleFinishPomodoro,

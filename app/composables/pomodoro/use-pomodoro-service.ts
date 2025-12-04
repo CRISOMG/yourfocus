@@ -107,7 +107,6 @@ export const usePomodoroService = () => {
   }
 
   async function finishCurrentCycle() {
-    debugger;
     const cycle = await cycleRepository.getCurrent();
     if (!cycle) {
       return;
@@ -141,14 +140,12 @@ export const usePomodoroService = () => {
     const pomodoroTagsTypesArray =
       pomodoros?.flatMap((p) => p.tags?.map((t) => t.type)) || [];
 
-    const tagType = required_tags.filter(
-      (tag) => !pomodoroTagsTypesArray.includes(tag)
+    const tagType = calculateNextTagFromCycleSecuence(
+      pomodoroTagsTypesArray,
+      required_tags
     );
+    const tag = await tagRepository.getOneByType(tagType);
 
-    if (!tagType.length) {
-      return;
-    }
-    const tag = await tagRepository.getOneByType(tagType[0]);
     if (!tag) {
       return;
     }

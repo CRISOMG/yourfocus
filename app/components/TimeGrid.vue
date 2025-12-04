@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { usePomodoroStore } from "~/stores/pomodoro";
 import type { Pomodoro } from "~/types/Pomodoro";
 const currHour = ref(new Date().getHours());
+const pomodoroStore = usePomodoroStore();
+const pomodoroStoreRefs = storeToRefs(pomodoroStore);
 
 const elementToScrollRef = ref<HTMLElement | null>(null);
 
@@ -50,6 +53,22 @@ const hours = computed(() => {
   return h;
 });
 
+function getDiffInMinutes(from: string, to: string) {
+  const tiempoAMinutos = (tiempoStr: string) => {
+    const [horas, minutos] = tiempoStr.split(":").map(Number);
+    return horas * 60 + minutos;
+  };
+
+  const minutosInicio = tiempoAMinutos(from);
+  const minutosFin = tiempoAMinutos(to);
+
+  if (minutosFin < minutosInicio) {
+    return minutosFin + 1440 - minutosInicio;
+  }
+
+  return minutosFin - minutosInicio;
+}
+
 const formatHour = (hour: number) => {
   if (props.format24h) {
     return `${hour.toString().padStart(2, "0")}:00`;
@@ -58,35 +77,42 @@ const formatHour = (hour: number) => {
   const h = hour % 12 || 12;
   return `${h} ${ampm}`;
 };
-const hourInPx = 60;
 
-// Calculate position and height for a pomodoro
+const proportion = 2;
+const hourInPx = 60 * proportion;
+const caclTop = (hour: number, minutes: number) => {
+  const startMinutesInPx = hour * hourInPx + minutes * proportion;
+  const totalGridMinutesInPx = 23 * hourInPx;
+
+  const top = (startMinutesInPx / totalGridMinutesInPx) * 100;
+
+  return top;
+};
+
 const getPomodoroStyle = (pomodoro: Pomodoro["Row"]) => {
   const start = new Date(pomodoro.started_at);
   const hour = start.getHours();
   const minutes = start.getMinutes();
 
-  // Calculate total minutes from the start of the grid
-  const startMinutes = hour * hourInPx + minutes;
-  const totalGridMinutes = 23 * hourInPx;
+  const end = new Date(pomodoro.finished_at || pomodoro.expected_end);
 
-  const top = (startMinutes / totalGridMinutes) * 100;
-  const currMinutes = pomodoro.timelapse / hourInPx;
-  const expectedMinutes = (pomodoro?.expected_duration || 0) / hourInPx;
-  const selectedMinutes =
-    currMinutes > expectedMinutes ? currMinutes : expectedMinutes;
-  const height = (selectedMinutes / totalGridMinutes) * 100;
+  const diff = getDiffInMinutes(
+    start.toLocaleTimeString().slice(0, 5),
+    end.toLocaleTimeString().slice(0, 5)
+  );
 
+  const top = caclTop(hour, minutes);
+  let height = diff * proportion;
   return {
-    top: `calc(${top}% - 10px)`,
-    height: `2rem 1rem`,
+    top: `calc(${top}%)`,
+    height: `${height}px`,
   };
 };
 </script>
 
 <template>
   <div
-    class="relative w-full border border-gray-200 rounded-lg overflow-hidden bg-white dark:bg-gray-900 dark:border-gray-800 h-90 overflow-y-scroll"
+    class="relative w-full h-full border border-gray-200 rounded-lg overflow-hidden bg-white dark:bg-gray-900 dark:border-gray-800 overflow-y-scroll"
   >
     <!-- Grid -->
     <div
@@ -108,29 +134,52 @@ const getPomodoroStyle = (pomodoro: Pomodoro["Row"]) => {
         }"
       >
         <span
-          class="text-xs text-gray-400 ml-2 -mt-[10px] bg-white dark:bg-gray-900 px-1"
+          class="text-sm text-gray-400 ml-2 -mt-[10px] bg-white dark:bg-gray-900 px-1"
         >
           {{ formatHour(hour) }}
         </span>
       </div>
-
+      <div
+        class="absolute h-0.5 w-full rounded-sm border border-red-500 flex flex-row justify-left transition-all hover:shadow-md z-10"
+        :style="{
+          top: `calc(${caclTop(
+            new Date().getHours(),
+            new Date().getMinutes()
+          )}%)`,
+        }"
+      ></div>
       <!-- Pomodoros -->
       <div
         v-for="pomodoro in pomodoros"
         :key="pomodoro.id"
-        class="absolute left-2 right-4 rounded-md shadow-sm border border-primary-200 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-800 p-0 flex flex-row justify-left items-baseline transition-all hover:shadow-md z-10"
+        class="absolute left-2 right-4 rounded-sm shadow-sm border border-primary-200 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-800 p-0 transition-all hover:shadow-md z-10"
         :style="getPomodoroStyle(pomodoro)"
       >
-        <div
-          class="select-none text-[10px] text-primary-500 dark:text-primary-400 mx-1"
+        <span
+          class="absolute -top-[5px] bg-amber- select-none text-sm text-primary-500 dark:text-primary-400 mx-1"
         >
-          {{ new Date(pomodoro.started_at).toLocaleTimeString() }} -
-          {{ (pomodoro.expected_duration || 0) / 60 }}m
-        </div>
-        <div
-          class="select-none text-xs font-medium text-primary-700 dark:text-primary-300"
+          {{ new Date(pomodoro.started_at).toLocaleTimeString().slice(0, 5) }}
+        </span>
+        <span
+          class="absolute -bottom-[4px] bg-amber- select-none text-sm text-primary-500 dark:text-primary-400 mx-1"
         >
-          {{ pomodoro.tags[0].type || "Pomodoro" }}
+          {{
+            new Date(pomodoro.finished_at || pomodoro.expected_end)
+              .toLocaleTimeString()
+              .slice(0, 5)
+          }}
+        </span>
+        <div class="ml-12 flex flex-row justify-left items-baseline">
+          <div
+            class="select-none text-sm text-primary-500 dark:text-primary-400 mx-1"
+          >
+            {{ (pomodoro.expected_duration || 0) / 60 }}m
+          </div>
+          <div
+            class="select-none text-md font-medium text-primary-700 dark:text-primary-300"
+          >
+            {{ pomodoro.tags[0].type || "Pomodoro" }}
+          </div>
         </div>
       </div>
     </div>

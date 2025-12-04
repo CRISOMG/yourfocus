@@ -17,7 +17,7 @@ export const useTimer = () => {
     syncAccSeconds,
     clockStartInMinute,
   }: {
-    onTick: () => void;
+    onTick: (accSeconds: number) => void;
     onFinish: () => void;
     syncAccSeconds: number;
     clockStartInMinute?: number;
@@ -25,7 +25,7 @@ export const useTimer = () => {
     if (timer.value) clearInterval(timer.value);
 
     timer.value = setInterval(() => {
-      onTick();
+      onTick(accSeconds.value);
       const pomodoroDurationInSeconds = clockStartInMinute
         ? clockStartInMinute * 60
         : PomodoroDurationInSecondsByDefaultCycleConfiguration[
@@ -33,6 +33,7 @@ export const useTimer = () => {
           ];
 
       syncAccSeconds += 1;
+      accSeconds.value += 1;
       const remainingSeconds = pomodoroDurationInSeconds - syncAccSeconds;
       setClockInSeconds(remainingSeconds);
 

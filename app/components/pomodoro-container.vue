@@ -27,7 +27,9 @@
           />
         </div>
       </div>
-      <TimeGrid :pomodoros="pomodorosListToday" />
+      <div class="w-2xl h-[80vh]">
+        <TimeGrid :pomodoros="pomodorosListToday" />
+      </div>
     </div>
   </section>
 </template>
@@ -76,12 +78,9 @@ onMounted(() => {
   handleListPomodoros();
   // TODO: mejorar logica para pausar pomodoro al cerrar la pestaña. se puede usar un websocket para mantener la syncronizacion o pushing en intervalos de tiempo
   window.onbeforeunload = async () => {
-    if (currPomodoro.value) {
-      if (currPomodoro.value.state === "current") {
-        localStorage.setItem(
-          "currPomodoro",
-          JSON.stringify(currPomodoro.value)
-        );
+    if (import.meta.client) {
+      localStorage.setItem("currPomodoro", JSON.stringify(currPomodoro.value));
+      if (currPomodoro.value?.state === "current") {
         await handlePausePomodoro();
       }
     }

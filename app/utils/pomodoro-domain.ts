@@ -1,6 +1,7 @@
 export const DEFAULT_REQUIRED_TAGS_FOR_FINISH_CYCLE = [
   "focus",
   "break",
+  "focus",
   "long-break",
 ];
 
@@ -63,18 +64,29 @@ export function calculateTimelineFromNow(
   };
 }
 
-export function calculateNextTagFromCycleSecuence({
-  currentSecuense,
-  secuense,
-}: {
-  currentSecuense: string[];
-  secuense: string[];
-}) {
-  const required_tags = secuense || DEFAULT_REQUIRED_TAGS_FOR_FINISH_CYCLE;
+export function calculateNextTagFromCycleSecuence(
+  currentSecuense: string[],
+  requiredSecuense: string[]
+): string {
+  const rest = structuredClone(requiredSecuense);
 
-  const nextTagType = required_tags.filter(
-    (tag) => !currentSecuense.includes(tag)
-  );
+  requiredSecuense.forEach((tag) => {
+    if (currentSecuense?.length === 0) {
+      return;
+    }
 
-  return nextTagType[0];
+    const currTagFromSecuense = currentSecuense[0];
+
+    const currentSecuenceIncludeARequiredTag = currTagFromSecuense === tag;
+
+    if (!currentSecuenceIncludeARequiredTag) {
+      rest.shift();
+      return;
+    }
+
+    currentSecuense.shift();
+    rest.shift();
+  });
+
+  return rest[0] || "";
 }
