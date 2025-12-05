@@ -7,6 +7,7 @@ import {
 
 function handleError(error: PostgrestError | null) {
   if (error && error.code !== "PGRST116") {
+    console.log(error);
     throw error;
   }
 }
@@ -14,7 +15,7 @@ export const usePomodoroRepository = () => {
   const supabase = useSupabaseClient();
 
   async function getCurrentPomodorosOfCurrentCycle() {
-    const pomodorosWithCycleAndTagsQuery = await supabase
+    const { data, error } = await supabase
       .from("pomodoros")
       .select(
         `
@@ -26,13 +27,13 @@ export const usePomodoroRepository = () => {
           tags (*)
           `
       )
-      .eq("cycle.state", "current")
-      .throwOnError();
-    const result = pomodorosWithCycleAndTagsQuery.data;
-    return result;
+      .eq("cycle.state", "current");
+
+    handleError(error);
+    return data;
   }
 
-  async function insert(pomodoro: Pomodoro["Insert"], tagId: TagIdByType) {
+  async function insert(pomodoro: Pomodoro["Insert"], tagId?: number) {
     const { data } = await supabase
       .from("pomodoros")
       .insert(pomodoro)
@@ -49,16 +50,18 @@ export const usePomodoroRepository = () => {
       .single()
       .throwOnError();
 
-    const tags = await supabase
-      .from("pomodoros_tags")
-      .insert({
-        pomodoro: data.id,
-        user_id: pomodoro.user_id,
-        tag: tagId,
-      })
-      .select(`*,pomodoro (*), tag (*)`)
-      .single()
-      .throwOnError();
+    if (tagId) {
+      const tags = await supabase
+        .from("pomodoros_tags")
+        .insert({
+          pomodoro: data.id,
+          user_id: pomodoro.user_id,
+          tag: tagId,
+        })
+        .select(`*,pomodoro (*), tag (*)`)
+        .single()
+        .throwOnError();
+    }
 
     const updatedPomodoro = await getOne(data.id);
     return updatedPomodoro;
@@ -104,7 +107,7 @@ export const usePomodoroRepository = () => {
     return data;
   }
   async function getOne(id: number) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("pomodoros")
       .select(
         `
@@ -119,9 +122,9 @@ export const usePomodoroRepository = () => {
       `
       )
       .eq("id", id)
-      .single()
-      .throwOnError();
+      .single();
 
+    handleError(error);
     return data;
   }
   async function listToday() {
@@ -175,9 +178,8 @@ export const usePomodoroCycleRepository = () => {
       )
       .filter("state", "eq", "current")
       .single();
-    if (error && error.code !== "PGRST116") {
-      throw error;
-    }
+
+    handleError(error);
 
     return data;
   }

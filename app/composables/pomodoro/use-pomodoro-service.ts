@@ -10,6 +10,10 @@ import {
   useTagRepository,
 } from "./use-pomodoro-repository";
 
+type PomodoroCycleWithPomodoros = PomodoroCycle["Row"] & {
+  pomodoros?: Pomodoro["Row"][];
+};
+
 export const usePomodoroService = () => {
   const pomodoroRepository = usePomodoroRepository();
   const cycleRepository = usePomodoroCycleRepository();
@@ -25,19 +29,20 @@ export const usePomodoroService = () => {
     const pomodoros = currCycle.pomodoros;
     const required_tags = currCycle.required_tags;
 
-    const pomodoroTagsTypesArray =
-      pomodoros?.flatMap((p) => p.tags?.map((t) => t.type)) || [];
+    const pomodoroTagsTypesArray = pomodoros?.flatMap((p) => p.type) || [];
     return hasCycleFinished(pomodoroTagsTypesArray, required_tags);
   }
 
-  async function getOrCreateCurrentCycleId(userId: string): Promise<number> {
+  async function getOrCreateCurrentCycle(
+    userId: string
+  ): Promise<PomodoroCycle["Row"]> {
     const isCurrentCycleEnd = await checkIsCurrentCycleEnd();
     if (isCurrentCycleEnd) {
       await finishCurrentCycle();
     } else {
       const currentCycle = await cycleRepository.getCurrent();
       if (currentCycle) {
-        return currentCycle.id;
+        return currentCycle;
       }
     }
 
@@ -49,77 +54,37 @@ export const usePomodoroService = () => {
     if (!newCycle) {
       throw new Error("Failed to create new pomodoro cycle.");
     }
-    return newCycle.id;
+    return newCycle;
   }
-
-  async function createPomodoro({
-    user_id,
-    tagId = TagIdByType.FOCUS,
-    state = "current",
-  }: {
-    user_id: string;
-    tagId?: TagIdByType;
-    state?: "current";
-  }) {
-    const defaultDurationBytag =
-      PomodoroDurationInSecondsByDefaultCycleConfiguration[tagId];
-
-    const { started_at, expected_end } =
-      calculateTimelineFromNow(defaultDurationBytag);
-
-    const pomodoroCycleId = await getOrCreateCurrentCycleId(user_id);
-
-    const expected_duration = defaultDurationBytag;
-    const result = await pomodoroRepository.insert(
-      {
-        user_id,
-        started_at,
-        expected_end,
-        timelapse: 0,
-        toggle_timeline: [],
-        created_at: new Date().toISOString(),
-        state,
-        expected_duration,
-        cycle: pomodoroCycleId,
-      },
-      tagId
-    );
-
-    return result;
-  }
-
   async function startPomodoro({
     user_id,
-    tagId = TagIdByType.FOCUS,
     state = "current",
   }: {
     user_id: string;
-    tagId?: TagIdByType;
     state?: "current" | "paused";
   }) {
+    const cycle = await getOrCreateCurrentCycle(user_id);
+
+    const type = await getTagByCycleSecuense(cycle);
     const defaultDurationBytag =
-      PomodoroDurationInSecondsByDefaultCycleConfiguration[tagId];
+      PomodoroDurationInSecondsByDefaultCycleConfiguration[type];
 
     const { started_at, expected_end } =
       calculateTimelineFromNow(defaultDurationBytag);
 
-    const pomodoroCycleId = await getOrCreateCurrentCycleId(user_id);
-
     const expected_duration = defaultDurationBytag;
-    const result = await pomodoroRepository.insert(
-      {
-        user_id,
-        started_at,
-        expected_end,
-        timelapse: 0,
-        toggle_timeline: [],
-        created_at: new Date().toISOString(),
-        state,
-        expected_duration,
-        cycle: pomodoroCycleId,
-      },
-      tagId
-    );
+    const result = await pomodoroRepository.insert({
+      user_id,
+      started_at,
+      expected_end,
+      timelapse: 0,
+      toggle_timeline: [],
+      created_at: new Date().toISOString(),
+      state,
+      type,
+      expected_duration,
+      cycle: cycle.id,
+    });
 
     return result;
   }
@@ -166,28 +131,29 @@ export const usePomodoroService = () => {
     });
   }
 
-  async function getTagByCycleSecuense() {
-    const cycle = await cycleRepository.getCurrent();
-    if (!cycle) {
-      return;
-    }
-    const pomodoros = cycle.pomodoros;
-    const required_tags =
-      cycle.required_tags || DEFAULT_REQUIRED_TAGS_FOR_FINISH_CYCLE;
+  async function getTagByCycleSecuense(cycle: PomodoroCycle["Row"] | null) {
+    let _cycle: PomodoroCycleWithPomodoros | null = cycle;
+    if (!_cycle) {
+      const currCycle = await cycleRepository.getCurrent();
 
-    const pomodoroTagsTypesArray =
-      pomodoros?.flatMap((p) => p.tags?.map((t) => t.type)) || [];
+      if (!currCycle) {
+        throw new Error("No current cycle found");
+      }
+
+      _cycle = currCycle;
+    }
+    const pomodoros = _cycle.pomodoros;
+    const required_tags =
+      _cycle.required_tags || DEFAULT_REQUIRED_TAGS_FOR_FINISH_CYCLE;
+
+    const pomodoroTagsTypesArray = pomodoros?.map((p) => p.type) || [];
 
     const tagType = calculateNextTagFromCycleSecuence(
       pomodoroTagsTypesArray,
       required_tags
     );
-    const tag = await tagRepository.getOneByType(tagType);
 
-    if (!tag) {
-      return;
-    }
-    return tag;
+    return tagType as Pomodoro["Row"]["type"];
   }
 
   async function getTagIdByType(type: string) {
@@ -198,23 +164,14 @@ export const usePomodoroService = () => {
     return tag.id;
   }
   async function createNextPomodoro({ user_id }: { user_id: string }) {
-    const pomodoroCycleId = await getOrCreateCurrentCycleId(user_id);
-
-    const cycle = await cycleRepository.getOne(pomodoroCycleId);
-    const nextTag: string = calculateNextTagFromCycleSecuence(
-      cycle?.pomodoros?.flatMap((p) => p.tags?.map((t) => t.type)) || [],
-      cycle?.required_tags || DEFAULT_REQUIRED_TAGS_FOR_FINISH_CYCLE
-    );
-    const nextTagId = TagEnumByType[nextTag as keyof typeof TagEnumByType];
-
-    return await startPomodoro({ user_id, tagId: nextTagId, state: "paused" });
+    return await startPomodoro({ user_id, state: "paused" });
   }
   return {
     checkIsCurrentCycleEnd,
     finishCurrentCycle,
     registToggleTimelinePomodoro,
     startPomodoro,
-    getOrCreateCurrentCycleId,
+    getOrCreateCurrentCycle,
     finishCurrentPomodoro,
     getTagByCycleSecuense,
     getTagIdByType,

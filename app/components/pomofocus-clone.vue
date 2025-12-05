@@ -42,7 +42,7 @@
               }"
               @click="
                 () => {
-                  if (pomodoroBottonIsPlay) {
+                  if (!pomodoroBottonIsPlay) {
                     handlePausePomodoro();
                     pomodoroBottonIsPlay = false;
                   } else {
@@ -71,7 +71,7 @@
 <script setup lang="ts">
 const pomodoroBottonIsPlay = ref(true);
 
-const currentPomodoroType = ref<TagType>(TagType.FOCUS);
+const currentPomodoroType = ref<keyof typeof TagEnumByType>(TagType.FOCUS);
 
 const {
   handleStartPomodoro,

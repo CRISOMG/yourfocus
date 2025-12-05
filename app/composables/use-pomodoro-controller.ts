@@ -56,21 +56,21 @@ export const usePomodoroUtils = () => {
         return handleFinishPomodoro();
       }
 
-      console.log({ remainingSeconds });
       setClockInSeconds(remainingSeconds);
     }
 
     if (upstreamPomodoro?.state === "current") {
       handleStartTimer();
     }
+
+    if (!upstreamPomodoro) {
+      localStorage.removeItem("currPomodoro");
+    }
   }
   async function handleStartPomodoro(user_id: string) {
     if (!currPomodoro.value) {
-      const tag = await pomodoroService.getTagByCycleSecuense();
-
       const result = await pomodoroService.startPomodoro({
         user_id,
-        tagId: tag?.id,
       });
       await handleListPomodoros();
 
@@ -127,15 +127,6 @@ export const usePomodoroUtils = () => {
       user_id: currPomodoro.value.user_id,
     });
 
-    // const nextTag: string = calculateNextTagFromCycleSecuence(
-    //   nextPomodoro?.cycle?.pomodoros?.flatMap((p) =>
-    //     p.tags?.map((t) => t.type)
-    //   ) || [],
-    //   nextPomodoro?.cycle?.required_tags
-    // );
-    // const nextTagId = TagEnumByType[nextTag as keyof typeof TagEnumByType];
-
-    // console.log("nextTagId", nextTagId, nextPomodoro);
     setClockInSeconds(nextPomodoro.expected_duration);
     currPomodoro.value = nextPomodoro;
     localStorage.setItem("currPomodoro", JSON.stringify(nextPomodoro));

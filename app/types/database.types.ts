@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -26,6 +46,7 @@ export type Database = {
           state: Database["public"]["Enums"]["pomodoro-state"]
           timelapse: number
           toggle_timeline: Json | null
+          type: Database["public"]["Enums"]["pomodoro-type"]
           user_id: string
         }
         Insert: {
@@ -39,6 +60,7 @@ export type Database = {
           state?: Database["public"]["Enums"]["pomodoro-state"]
           timelapse?: number
           toggle_timeline?: Json | null
+          type?: Database["public"]["Enums"]["pomodoro-type"]
           user_id: string
         }
         Update: {
@@ -52,6 +74,7 @@ export type Database = {
           state?: Database["public"]["Enums"]["pomodoro-state"]
           timelapse?: number
           toggle_timeline?: Json | null
+          type?: Database["public"]["Enums"]["pomodoro-type"]
           user_id?: string
         }
         Relationships: [
@@ -151,6 +174,7 @@ export type Database = {
     }
     Enums: {
       "pomodoro-state": "current" | "paused" | "finished"
+      "pomodoro-type": "focus" | "break" | "long-break"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -276,9 +300,14 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       "pomodoro-state": ["current", "paused", "finished"],
+      "pomodoro-type": ["focus", "break", "long-break"],
     },
   },
 } as const
+

@@ -10,9 +10,9 @@ export const DEFAULT_BREAK_DURATION_IN_MINUTES = 5;
 export const DEFAULT_LONG_BREAK_DURATION_IN_MINUTES = 15;
 
 export enum TagIdByType {
-  FOCUS = 1,
-  BREAK = 2,
-  LONG_BREAK = 3,
+  FOCUS = "focus",
+  BREAK = "break",
+  LONG_BREAK = "long-break",
 }
 
 export enum TagType {
