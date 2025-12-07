@@ -178,7 +178,7 @@ const getPomodoroStyle = (pomodoro: Pomodoro["Row"]) => {
           <div
             class="select-none text-md font-medium text-primary-700 dark:text-primary-300"
           >
-            {{ pomodoro.tags[0].type || "Pomodoro" }}
+            {{ pomodoro.type || "Pomodoro" }}
           </div>
         </div>
       </div>
