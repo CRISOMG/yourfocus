@@ -8,12 +8,12 @@
 </template>
 
 <script setup lang="ts">
-const supabase = useSupabaseClient()
+const supabase = useSupabaseClient();
 onMounted(() => {
   defineShortcuts({
-    "s-o": () => {
-      confirm("Are you sure you want to sign out?") && supabase.auth.signOut()
-    }
-  })
-})
+    ctrl_shift_q: () => {
+      confirm("Are you sure you want to sign out?") && supabase.auth.signOut();
+    },
+  });
+});
 </script>

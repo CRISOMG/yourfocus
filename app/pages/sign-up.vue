@@ -1,5 +1,5 @@
 <template>
   <div class="flex items-center justify-center h-screen">
-    <ContainerLogin />
+    <ContainerSignUp />
   </div>
 </template>

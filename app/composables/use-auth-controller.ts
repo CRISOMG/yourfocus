@@ -1,7 +1,7 @@
 import type { FormError, FormSubmitEvent } from "@nuxt/ui";
 import { useAuthStore } from "~/stores/auth";
 
-export function useLogin() {
+export function useAuthController() {
   const supabase = useSupabaseClient();
 
   const authStore = useAuthStore();
@@ -51,7 +51,7 @@ export function useLogin() {
   }
 
   const toast = useSuccessErrorToast();
-  async function onSubmit({
+  async function handleLogin({
     email,
     password,
   }: {
@@ -74,10 +74,42 @@ export function useLogin() {
     }
   }
 
+  async function handleSignUp({
+    email,
+    password,
+    username,
+    fullname,
+  }: {
+    email: string;
+    password: string;
+  }) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username,
+          fullname,
+        },
+      },
+    });
+    if (error) {
+      toast.addErrorToast({ title: "Error", description: error.message });
+      return;
+    } else {
+      toast.addSuccessToast({
+        title: "Success",
+        description: "The form has been submitted.",
+      });
+      navigateTo("/login");
+    }
+  }
+
   return {
     state,
     validate,
-    onSubmit,
+    handleLogin,
+    handleSignUp,
     authStoreRefs,
     signInWithEmail,
     signInWithEmailPassword,

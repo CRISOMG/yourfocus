@@ -35,7 +35,7 @@ export default defineNuxtConfig({
       login: "/login",
       callback: "/callback",
 
-      exclude: ["/request-reset-password", "/update-password"],
+      exclude: ["/request-reset-password", "/update-password", "/sign-up"],
     },
   },
 });
