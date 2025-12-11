@@ -46,10 +46,16 @@ export const useTimer = () => {
     }, 1000);
   }
 
+  function clearTimer() {
+    if (timer.value) clearInterval(timer.value);
+    timer.value = null;
+  }
+
   return {
     DEFAULT_POMODORO_DURATION_IN_MINUTES,
     startTimer,
     setClockInSeconds,
+    clearTimer,
     timer,
     clockInMinutes,
   };

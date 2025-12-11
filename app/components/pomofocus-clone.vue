@@ -143,16 +143,20 @@ const props = defineProps({
   },
 });
 
-watch(currPomodoro, () => {
-  if (currPomodoro.value?.type) {
-    currentPomodoroType.value = currPomodoro.value.type;
-  }
+watch(
+  currPomodoro,
+  () => {
+    if (currPomodoro.value?.type) {
+      currentPomodoroType.value = currPomodoro.value.type;
+    }
 
-  if (currPomodoro.value?.state === "current") {
-    pomodoroBottonIsPlay.value = false;
-  } else {
-    pomodoroBottonIsPlay.value = true;
-  }
-  localStorage.setItem("currPomodoro", JSON.stringify(currPomodoro.value));
-});
+    if (currPomodoro.value?.state === "current") {
+      pomodoroBottonIsPlay.value = false;
+    } else {
+      pomodoroBottonIsPlay.value = true;
+    }
+    localStorage.setItem("currPomodoro", JSON.stringify(currPomodoro.value));
+  },
+  { deep: true }
+);
 </script>

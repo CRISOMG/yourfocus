@@ -40,7 +40,7 @@ export const useProfileController = () => {
     if (!user.value) return;
     loading.value = true;
     try {
-      const updatedProfile = await service.updateProfile(user.value.id, {
+      const updatedProfile = await service.updateProfile(user.value.sub, {
         ...data,
         updated_at: new Date().toISOString(),
       });
