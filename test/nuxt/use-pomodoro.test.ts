@@ -7,7 +7,6 @@ import type { AuthTokenResponsePassword } from "@supabase/supabase-js";
 describe("Feature Pomodoro", () => {
   let supabase: ReturnType<typeof useSupabaseClient>;
   let mainUserSession: AuthTokenResponsePassword["data"];
-  let userWithoutFinishedCycleSession: AuthTokenResponsePassword["data"];
 
   beforeAll(async () => {
     supabase = useSupabaseClient();
@@ -22,17 +21,6 @@ describe("Feature Pomodoro", () => {
       throw new Error(`Fallo de autenticación: ${authError?.message}`);
     }
     mainUserSession = sessionData;
-
-    const { data: sessionData2, error: authError2 } =
-      await supabase.auth.signInWithPassword({
-        email: "userwithoutfinishedcycle@yopmail.com",
-        password: process.env.SUPABASE_TEST_USER_PASSWORD || "",
-      });
-
-    if (authError2 || !sessionData2?.user) {
-      throw new Error(`Fallo de autenticación: ${authError2?.message}`);
-    }
-    userWithoutFinishedCycleSession = sessionData2;
   });
 
   afterAll(async () => {

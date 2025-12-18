@@ -23,7 +23,8 @@
         >
           <UButton
             :avatar="{
-              src: profile?.avatar_url || 'user-white.png',
+              src:
+                profileController.profile.value?.avatar_url || 'user-white.png',
             }"
             size="md"
             color="neutral"
@@ -49,9 +50,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from "@nuxt/ui";
 import TimelineModal from "~/components/timeline-modal .vue";
-import { useProfileController } from "~/composables/profile/use-profile-controller";
 
-const { profile } = useProfileController();
+const profileController = useProfileController();
 
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
@@ -81,6 +81,14 @@ const items = ref<DropdownMenuItem[][]>([
         openShortcutsModal.value = true;
       },
     },
+
+    {
+      label: "Personal Access Token",
+      icon: "i-lucide-key",
+      onSelect: () => {
+        profileController.createToken();
+      },
+    },
   ],
 
   [
@@ -97,8 +105,8 @@ const items = ref<DropdownMenuItem[][]>([
   ],
 ]);
 
-watch(profile, () => {
-  if (!profile.value?.has_password) {
+watch(profileController.profile, () => {
+  if (!profileController.profile.value?.has_password) {
     openPasswordSetupModal.value = true;
   }
 });

@@ -92,11 +92,27 @@ export const useProfileController = () => {
     }
   });
 
+  const createToken = async () => {
+    try {
+      const { data, error } = await useFetch("/api/token/generate", {
+        method: "POST",
+        body: { name: "N8N Token" },
+      });
+
+      if (data.value) {
+        console.log("Tu nuevo token:", data.value);
+        // Mostrar modal para que el usuario copie el token
+      }
+    } catch (e) {
+      console.error("Error generando token", e);
+    }
+  };
   return {
     profile,
     loading,
     handleGetProfile,
     handleUpdateProfile,
     handleUploadAvatar,
+    createToken,
   };
 };
