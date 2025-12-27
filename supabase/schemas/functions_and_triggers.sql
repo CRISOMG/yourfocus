@@ -19,7 +19,7 @@ $$ SET search_path = public;
 ALTER FUNCTION "public"."auto_finish_expired_pomodoros"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_now" timestamp with time zone DEFAULT "now"()) RETURNS integer
+CREATE OR REPLACE FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_expected_duration" integer, "p_now" timestamp with time zone DEFAULT "now"()) RETURNS double precision
     LANGUAGE "plpgsql" IMMUTABLE
     AS $$
 DECLARE
@@ -38,11 +38,11 @@ BEGIN
         FROM jsonb_array_elements(p_toggle_timeline)
         ORDER BY (value->>'at')::timestamptz ASC
     LOOP
-        IF v_event.type = 'pause' AND v_is_running THEN
+        IF (v_event.type = 'pause' OR v_event.type = 'finish') AND v_is_running THEN
             -- GREATEST(0, ...) equivale a Math.max(0, ...)
             v_elapsed_decimal := v_elapsed_decimal + GREATEST(0, extract(epoch from (v_event.at - v_current_segment_start)));
             v_is_running := false;
-        ELSIF v_event.type = 'play' AND NOT v_is_running THEN
+        ELSIF (v_event.type = 'play' OR v_event.type = 'start') AND NOT v_is_running THEN
             v_current_segment_start := v_event.at;
             v_is_running := true;
         END IF;
@@ -51,12 +51,12 @@ BEGIN
     IF v_is_running THEN
         v_elapsed_decimal := v_elapsed_decimal + GREATEST(0, extract(epoch from (p_now - v_current_segment_start)));
     END IF;
-    RETURN floor(v_elapsed_decimal);
+    RETURN LEAST(v_elapsed_decimal, p_expected_duration::double precision);
 END;
 $$ SET search_path = public;
 
 
-ALTER FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_now" timestamp with time zone) OWNER TO "postgres";
+ALTER FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_expected_duration" integer, "p_now" timestamp with time zone) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
@@ -150,8 +150,8 @@ CREATE OR REPLACE FUNCTION "public"."sync_pomodoro_expected_end"() RETURNS "trig
     AS $$
     DECLARE
         v_duration integer;
-        v_timelapse integer;
-        v_remaining integer;
+        v_timelapse double precision;
+        v_remaining_seconds double precision;
     BEGIN
         -- Only update if state is current or paused
         IF NEW.state = 'finished' THEN
@@ -161,13 +161,13 @@ CREATE OR REPLACE FUNCTION "public"."sync_pomodoro_expected_end"() RETURNS "trig
         v_duration := NEW.expected_duration;
         
         -- Calculate timelapse until "now" (the moment of update)
-        v_timelapse := public.calculate_pomodoro_timelapse_sql(NEW.started_at, NEW.toggle_timeline, now());
-        v_remaining := v_duration - v_timelapse;
+        v_timelapse := public.calculate_pomodoro_timelapse_sql(NEW.started_at, NEW.toggle_timeline, v_duration, now());
+        v_remaining_seconds := v_duration - v_timelapse;
 
 
         -- Set expected_end based on remaining time
         IF NEW.state = 'current' THEN
-            NEW.expected_end := now() + (v_remaining || ' seconds')::interval;
+            NEW.expected_end := now() + (v_remaining_seconds || ' seconds')::interval;
         ELSE
             -- If paused, expected_end is essentially "infinity" or just stay as is, 
             -- but for logic clarity, we set it far in the future or keep it stable.
@@ -175,7 +175,7 @@ CREATE OR REPLACE FUNCTION "public"."sync_pomodoro_expected_end"() RETURNS "trig
             NEW.expected_end := NULL; 
         END IF;
 
-        NEW.timelapse := v_timelapse;
+        NEW.timelapse := ROUND(v_timelapse);
         
         RETURN NEW;
     END;
@@ -206,9 +206,9 @@ GRANT ALL ON FUNCTION "public"."auto_finish_expired_pomodoros"() TO "anon";
 GRANT ALL ON FUNCTION "public"."auto_finish_expired_pomodoros"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."auto_finish_expired_pomodoros"() TO "service_role";
 
-GRANT ALL ON FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_now" timestamp with time zone) TO "anon";
-GRANT ALL ON FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_now" timestamp with time zone) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_now" timestamp with time zone) TO "service_role";
+GRANT ALL ON FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_expected_duration" integer, "p_now" timestamp with time zone) TO "anon";
+GRANT ALL ON FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_expected_duration" integer, "p_now" timestamp with time zone) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."calculate_pomodoro_timelapse_sql"("p_started_at" timestamp with time zone, "p_toggle_timeline" "jsonb", "p_expected_duration" integer, "p_now" timestamp with time zone) TO "service_role";
 
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";

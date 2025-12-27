@@ -132,10 +132,12 @@ export function calculateNextTagFromCycleSecuence(
 }
 
 export function calculatePomodoroTimelapse(
-  startedAt: string | null,
   toggleTimeline: TPomodoro["toggle_timeline"],
+  expectedDuration: number,
   now = Date.now()
 ): number {
+  const startedAt = toggleTimeline.find((event) => event.type === "start")?.at;
+
   if (!startedAt) return 0;
 
   const start = new Date(startedAt).getTime();
@@ -151,12 +153,12 @@ export function calculatePomodoroTimelapse(
   for (const event of events) {
     const eventTime = new Date(event.at).getTime();
 
-    if (event.type === "pause" && isRunning) {
+    if ((event.type === "pause" || event.type === "finish") && isRunning) {
       elapsed += Math.max(0, eventTime - currentSegmentStart);
       isRunning = false;
     }
 
-    if (event.type === "play" && !isRunning) {
+    if ((event.type === "play" || event.type === "start") && !isRunning) {
       currentSegmentStart = eventTime;
       isRunning = true;
     }
@@ -166,5 +168,5 @@ export function calculatePomodoroTimelapse(
     elapsed += Math.max(0, now - currentSegmentStart);
   }
 
-  return Math.floor(elapsed / 1000);
+  return Math.min(Math.floor(elapsed / 1000), expectedDuration);
 }

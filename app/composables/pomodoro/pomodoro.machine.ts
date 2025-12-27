@@ -38,17 +38,18 @@ export interface PomodoroMachineDeps {
 const computeExpectedEnd = (pomodoro: TPomodoro) => {
   const duration = (pomodoro as any).expected_duration || 25 * 60;
   const timelapse = calculatePomodoroTimelapse(
-    pomodoro.started_at,
-    pomodoro.toggle_timeline
+    pomodoro.toggle_timeline,
+    duration
   );
   return new Date(Date.now() + (duration - timelapse) * 1000).toISOString();
 };
 
 const updateLocalState = (pomodoro: TPomodoro) => {
   if (!pomodoro.id) return;
+  const duration = (pomodoro as any).expected_duration || 25 * 60;
   pomodoro.timelapse = calculatePomodoroTimelapse(
-    pomodoro.started_at || "",
-    pomodoro.toggle_timeline
+    pomodoro.toggle_timeline,
+    duration
   );
 };
 

@@ -81,12 +81,10 @@ export const usePomodoroService = () => {
 
     const toggle_timeline = [];
 
-    if (state === "current") {
-      toggle_timeline.push({
-        at: new Date().toISOString(),
-        type: "play",
-      });
-    }
+    toggle_timeline.push({
+      at: started_at,
+      type: "start",
+    });
 
     const result = await pomodoroRepository.insert({
       user_id,
@@ -144,10 +142,19 @@ export const usePomodoroService = () => {
     if (!pomodoro) {
       return;
     }
+
+    const { toggle_timeline, ...restPomodoro } = pomodoro;
+
+    toggle_timeline.push({
+      at: new Date().toISOString(),
+      type: "finish",
+    });
+
     return await pomodoroRepository.update(pomodoro.id, {
       timelapse,
       state: "finished",
       finished_at: new Date().toISOString(),
+      toggle_timeline,
     });
   }
 
