@@ -1,5 +1,5 @@
 <template>
-  <UContainer class="">
+  <UContainer class="pb-16">
     <div class="py-4 flex items-baseline justify-between">
       <div class="flex items-baseline">
         <i class="mr-1 w-6 flex self-center"
@@ -104,7 +104,7 @@ import TimelineModal from "~/components/timeline-modal .vue";
 
 const profileController = useProfileController();
 
-const openChatDrawer = ref(true);
+const openChatDrawer = ref(false);
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const user_id = computed(() => {

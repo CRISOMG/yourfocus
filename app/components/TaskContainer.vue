@@ -1,7 +1,9 @@
 <template>
   <div class="w-full max-w-sm self-center mt-2 flex flex-col justify-center">
     <!-- #regiond List of Tasks -->
-    <div class="w-full max-w-sm mb-4 gap-2 flex flex-col">
+    <div
+      class="w-full max-w-sm mb-4 gap-2 flex flex-col max-h-[20rem] overflow-y-auto custom-scrollbar"
+    >
       <div
         v-for="task in sortedTasks"
         :key="task.id"
@@ -166,7 +168,7 @@
 
           taskController.handleUpdateTask(
             modalSelectedTask.id,
-            modalSelectedTask
+            modalSelectedTask,
           );
         }
       "
@@ -233,7 +235,7 @@ async function handleSubmit() {
   await taskController.handleCreateTask(
     form.title,
     form.description,
-    selectedTag.value?.id
+    selectedTag.value?.id,
   );
 
   // Reset form

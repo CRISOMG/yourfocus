@@ -140,6 +140,7 @@ export class N8NLanguageModel implements LanguageModelV2 {
     }
 
     formData.append("chatInput", chatInput);
+    formData.append("user_id", this.options?.userId);
     if (systemMessage) {
       formData.append("system_message", systemMessage);
     }
@@ -163,7 +164,7 @@ export class N8NLanguageModel implements LanguageModelV2 {
       method: "POST",
       headers: {
         Authorization: this.options.authHeader,
-        "x-user-id": this.options.userId || "anonymous",
+        "x-user-id": this.options.userId,
       },
       body: formData,
     });

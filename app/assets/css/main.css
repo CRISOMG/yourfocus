@@ -5,7 +5,9 @@
 @theme {
     
 }
-
+.custom-scrollbar {
+@apply  [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500;
+}
 :root {
   --ui-primary: var(--ui-color-neutral-200);
   --ui-secondary: var(--ui-color-secondary-600);
@@ -23,4 +25,3 @@
   --ui-bg: var(--ui-color-neutral-900);
   --ui-bg-muted: var(--ui-color-neutral-900);
 }
-

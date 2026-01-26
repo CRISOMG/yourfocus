@@ -44,8 +44,6 @@ export function useFileUploadWithStatus() {
       formData.append("data", uploadFile);
 
       try {
-        debugger;
-        console.log(config.public.n8nGoogleDriveInboxWebhookUrl);
         const response = await $fetch<
           FileUploadResponseFromN8NGoogleDriveInboxWebhook[]
         >(config.public.n8nGoogleDriveInboxWebhookUrl, {
@@ -56,8 +54,11 @@ export function useFileUploadWithStatus() {
           body: formData,
         });
 
-        const { audio, text } =
+        const result =
           response[0] as FileUploadResponseFromN8NGoogleDriveInboxWebhook;
+
+        const text = result?.text;
+        const audio = result?.audio;
 
         if (text) {
           files.value = [

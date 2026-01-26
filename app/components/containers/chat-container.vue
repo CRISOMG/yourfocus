@@ -68,33 +68,32 @@ const chat = new Chat({
       options.body = JSON.stringify({ ...body, messages: [lastMessage] });
       return fetch(api, options);
 
-      const hasFiles = files.value.length > 0;
+      // const hasFiles = files.value.length > 0;
 
-      if (!hasFiles) {
-        return fetch(api, options);
-      }
+      // if (!hasFiles) {
+      //   return fetch(api, options);
+      // }
 
-      const formData = new FormData();
-      formData.append("messages", JSON.stringify([lastMessage]));
+      // const formData = new FormData();
+      // formData.append("messages", JSON.stringify([lastMessage]));
 
-      files.value.forEach((f) => {
-        formData.append("file", f.file, f.file.name);
-      });
+      // files.value.forEach((f) => {
+      //   formData.append("file", f.file, f.file.name);
+      // });
 
-      // Clonamos headers y eliminamos el Content-Type para que fetch lo genere con el boundary
-      const headers = { ...options?.headers } as Record<string, string>;
-      delete headers["content-type"];
-      delete headers["Content-Type"];
+      // // Clonamos headers y eliminamos el Content-Type para que fetch lo genere con el boundary
+      // const headers = { ...options?.headers } as Record<string, string>;
+      // delete headers["content-type"];
+      // delete headers["Content-Type"];
 
-      return fetch(api, {
-        method: "POST",
-        headers,
-        body: formData,
-      });
+      // return fetch(api, {
+      //   method: "POST",
+      //   headers,
+      //   body: formData,
+      // });
     },
   }),
   onData: (dataPart) => {
-    console.log(dataPart);
     if (dataPart.type === "data-chat-title") {
       refreshNuxtData("chats");
     }
@@ -193,7 +192,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="relative w-full overflow-y-scroll [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
+    class="relative w-full overflow-y-scroll custom-scrollbar"
     :ui="{ body: 'p-0 sm:p-0' }"
   >
     <DragDropOverlay :show="isDragging" />
@@ -243,7 +242,7 @@ onMounted(() => {
                   v-if="component.type === 'log'"
                   v-bind="component.log"
                 />
-                {{ console.log(component) }}
+
                 <MDCCached
                   v-if="component.type === 'text'"
                   :value="component.content"

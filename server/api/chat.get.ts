@@ -1,6 +1,6 @@
 // server/api/chats/[id].get.ts
 import type { UIMessage } from "ai";
-
+import { serverSupabaseUser } from "#supabase/server";
 // Definimos la estructura exacta que viene de n8n/LangChain según tu ejemplo
 interface N8NMessageLangChain {
   type: "human" | "ai" | "system" | string;
@@ -24,11 +24,16 @@ interface N8NChatHistoryRow {
 
 export default defineEventHandler(async (event) => {
   // 1. Obtener sesión del usuario (seguridad)
+  const user = await serverSupabaseUser(event);
 
-  // const session = await requireUserSession(event);
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized",
+    });
+  }
 
-  // @ts-ignore-next-line  --  Hardcodeamos el userId para pruebas
-  const userId = "8130067397";
+  const userId = user.sub;
 
   // 2. Consultar Postgres (el objeto 'sql' se auto-importa desde server/utils/n8n-db.ts)
   const rows = await sql<N8NChatHistoryRow[]>`
@@ -68,11 +73,7 @@ export default defineEventHandler(async (event) => {
 
   // 4. Retornar el objeto Chat completo que espera el template
   return {
-    id: userId, // En tu sistema, el ID del chat es el ID del usuario
-    title: "Your Focus Assistant",
-    userId: userId,
-    createdAt: new Date(),
-    path: `/chat/${userId}`,
+    id: userId,
     messages,
   };
 });

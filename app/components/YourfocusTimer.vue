@@ -50,17 +50,7 @@
                   ? 'w-18 justify-center relative shadow shadow-[0_4px_0px_0px_#c0c0c0] -top-[4px] bg-white rounded-xs active:bg-white hover:bg-white '
                   : 'w-18 justify-center bg-white rounded-xs active:bg-white hover:bg-white',
               }"
-              @click="
-                () => {
-                  if (!pomodoroBottonIsPlay) {
-                    handlePausePomodoro();
-                    pomodoroBottonIsPlay = false;
-                  } else {
-                    handleStartPomodoro(props.user_id);
-                    pomodoroBottonIsPlay = true;
-                  }
-                }
-              "
+              @click="handlePlayPausePomodoro"
             >
               {{ pomodoroBottonIsPlay ? "Start" : "Pause" }}
             </UButton>
@@ -184,19 +174,23 @@ const handlePomodoroTypeChange = (type: PomodoroType) => {
   });
 };
 
+const handlePlayPausePomodoro = () => {
+  if (pomodoroController?.currPomodoro?.state !== "current") {
+    handleStartPomodoro(
+      props.user_id,
+      pomodoroController?.currPomodoro?.type,
+      "current",
+    );
+    pomodoroBottonIsPlay.value = false;
+  } else {
+    handlePausePomodoro();
+    pomodoroBottonIsPlay.value = true;
+  }
+};
+
 defineShortcuts({
   " ": () => {
-    if (pomodoroController?.currPomodoro?.state !== "current") {
-      handleStartPomodoro(
-        props.user_id,
-        pomodoroController?.currPomodoro?.type,
-        "current",
-      );
-      pomodoroBottonIsPlay.value = false;
-    } else {
-      handlePausePomodoro();
-      pomodoroBottonIsPlay.value = true;
-    }
+    handlePlayPausePomodoro();
   },
   "1": () => {
     handlePomodoroTypeChange(PomodoroType.FOCUS);

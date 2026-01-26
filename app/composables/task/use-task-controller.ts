@@ -1,7 +1,7 @@
 import type { TTaskUpdate } from "./use-task-repository";
 import { useTaskService } from "./use-task-service";
 import type { Tables } from "~/types/database.types";
-
+import { type RealtimeChannel } from "@supabase/supabase-js";
 export type TTask = Tables<"tasks"> & {
   tag: Tables<"tags">;
 };
@@ -21,6 +21,8 @@ export const useTaskController = () => {
   const pomodoroController = usePomodoroController(); // Dependency on Pomodoro Controller to get current context
   const { profile } = useProfileController();
   const showArchivedTasks = useState<boolean>("showArchivedTasks", () => false);
+
+  const supabase = useSupabaseClient();
 
   // State
   const tasks = ref([] as TTask[]);
@@ -52,7 +54,7 @@ export const useTaskController = () => {
   async function handleCreateTask(
     title: string,
     description: string = "",
-    tagId?: number
+    tagId?: number,
   ) {
     if (!pomodoroController.currPomodoro || !profile.value) return;
     isLoading.value = true;
@@ -188,11 +190,55 @@ export const useTaskController = () => {
         await loadTasks();
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
+  let myChannel: any = null;
+
+  const setupRealtime = () => {
+    // 1. IMPORTANTE: Usar un nombre de canal ÚNICO y NUEVO.
+    // Esto evita que choques con la conexión "zombie" anterior que sale en los logs.
+    const channelName = `tasks_realtime_${Date.now()}`;
+
+    // 2. Definición limpia
+    myChannel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "tasks", // <--- ESTO FALTABA EN TU PAYLOAD
+          // Si tienes problemas de RLS, prueba quitando el filter por ahora
+          // filter: 'user_id=eq.TU_ID'
+        },
+        (payload) => {
+          console.log("🔔 Cambio recibido:", payload);
+          loadTasks(); // Tu función de recarga
+        },
+      )
+      .subscribe((status, err) => {
+        console.log(`Estado (${channelName}):`, status);
+
+        if (status === "SUBSCRIBED") {
+          console.log("✅ Conexión establecida y sincronizada.");
+        }
+        if (status === "CHANNEL_ERROR") {
+          console.error("❌ Error de canal (Posible RLS o Mismatch):", err);
+        }
+      });
+  };
 
   onMounted(() => {
     loadTasks();
+    setupRealtime();
+  });
+
+  onUnmounted(async () => {
+    if (myChannel) {
+      console.log("🔌 Desconectando...");
+      await supabase.removeChannel(myChannel);
+      myChannel = null;
+    }
   });
 
   return {

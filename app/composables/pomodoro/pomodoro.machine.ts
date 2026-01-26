@@ -39,7 +39,7 @@ const computeExpectedEnd = (pomodoro: TPomodoro) => {
   const duration = (pomodoro as any).expected_duration || 25 * 60;
   const timelapse = calculatePomodoroTimelapse(
     pomodoro.toggle_timeline,
-    duration
+    duration,
   );
   return new Date(Date.now() + (duration - timelapse) * 1000).toISOString();
 };
@@ -49,7 +49,7 @@ const updateLocalState = (pomodoro: TPomodoro) => {
   const duration = (pomodoro as any).expected_duration || 25 * 60;
   pomodoro.timelapse = calculatePomodoroTimelapse(
     pomodoro.toggle_timeline,
-    duration
+    duration,
   );
 };
 
@@ -90,7 +90,7 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
             });
           }
           throw new Error("Invalid Input");
-        }
+        },
       ),
       togglePlay: fromPromise(
         async ({
@@ -100,9 +100,9 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
         }) => {
           return await pomodoroService.registToggleTimelinePomodoro(
             input.id,
-            input.type
+            input.type,
           );
-        }
+        },
       ),
       startTimerActor: fromCallback(({ sendBack, receive, input }) => {
         const pomodoro = (input as any).pomodoro as TPomodoro;
@@ -137,7 +137,7 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
             await pomodoroService.finishCurrentCycle();
           }
           return true;
-        }
+        },
       ),
       createNextPomodoro: fromPromise(
         async ({ input }: { input: { user_id: string; tags: any[] } }) => {
@@ -149,12 +149,12 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
               await pomodoroService.addTagToPomodoro(
                 next.id,
                 tag.id,
-                input.user_id
+                input.user_id,
               );
             }
           }
           return await pomodoroService.getOne(next.id);
-        }
+        },
       ),
     },
     actions: {
@@ -177,7 +177,7 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
       updateTimeOnNext: ({ context }) => {
         if (!context.pomodoro) return;
         timeController.setClockInSeconds(
-          (context.pomodoro as any).expected_duration || 1500
+          (context.pomodoro as any).expected_duration || 1500,
         );
       },
       optimisticPause: assign({

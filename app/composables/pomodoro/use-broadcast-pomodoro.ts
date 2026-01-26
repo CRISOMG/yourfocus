@@ -13,14 +13,14 @@ export const useBroadcastPomodoro = (handlers: TBroadcastEvents) => {
 
   // Estados globales para mantener la conexión viva entre navegaciones
   const channel = useState<RealtimeChannel | undefined>(
-    "pomodoro_broadcast_channel"
+    "pomodoro_broadcast_channel",
   );
   const deviceId = useState<string>("pomodoro_device_id", () =>
-    globalThis.crypto.randomUUID()
+    globalThis.crypto.randomUUID(),
   );
   const isMainHandler = useState<boolean>(
     "pomodoro_is_main_handler",
-    () => false
+    () => false,
   );
 
   const broadcastEvent = async (event: string, payload: any) => {
@@ -43,7 +43,7 @@ export const useBroadcastPomodoro = (handlers: TBroadcastEvents) => {
     // Ordenar por antigüedad (el más viejo es el "host" o main handler)
     presences.sort(
       (a, b) =>
-        new Date(a.online_at).getTime() - new Date(b.online_at).getTime()
+        new Date(a.online_at).getTime() - new Date(b.online_at).getTime(),
     );
 
     if (presences.length > 0) {
@@ -64,7 +64,13 @@ export const useBroadcastPomodoro = (handlers: TBroadcastEvents) => {
       .on("broadcast", { event: "pomodoro:finish" }, handlers.onFinish)
       .on("broadcast", { event: "pomodoro:next" }, handlers.onNext)
       .on("presence", { event: "sync" }, handlePresenceSync)
-      .subscribe(async (status) => {
+      .subscribe(async (status, err) => {
+        if (status === "SUBSCRIBED") {
+          console.log("✅ Suscrito exitosamente");
+        }
+        if (status === "CHANNEL_ERROR") {
+          console.error("❌ Error en el canal:", err);
+        }
         if (status === "SUBSCRIBED") {
           await channel.value?.track({
             deviceId: deviceId.value,
@@ -88,7 +94,7 @@ export const useBroadcastPomodoro = (handlers: TBroadcastEvents) => {
     (newProfile) => {
       if (newProfile) initChannel();
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   // Limpieza automática

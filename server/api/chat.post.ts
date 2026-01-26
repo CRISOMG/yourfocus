@@ -6,7 +6,7 @@ import {
   type UserModelMessage,
   type FilePart,
 } from "ai";
-
+import { serverSupabaseUser } from "#supabase/server";
 // 1. Tipos estrictos para la comunicación interna
 // Definimos lo que esperamos del Frontend de forma compatible con el SDK
 export interface IncomingMessage {
@@ -34,7 +34,16 @@ export default defineEventHandler(async (event) => {
   // 1. Parsing and validation
   const { id } = getRouterParams(event);
   const contentType = getHeader(event, "content-type");
+  const user = await serverSupabaseUser(event);
 
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized",
+    });
+  }
+
+  const userId = user.sub;
   let messages: IncomingMessage[] = [];
   let files: FilePart[] = [];
 
@@ -157,7 +166,6 @@ export default defineEventHandler(async (event) => {
   }
 
   // 4. Perfil de usuario y ejecución
-  const userId = "8130067397";
 
   const result = await streamText({
     model: n8n({ userId }),
