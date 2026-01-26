@@ -14,6 +14,7 @@ type FileUploadResponseFromN8NGoogleDriveInboxWebhook = {
 export function useFileUploadWithStatus() {
   const files = ref<FileWithStatus[]>([]);
   const config = useRuntimeConfig();
+  const user = useSupabaseUser();
 
   async function addFiles(
     newFiles: File[],
@@ -42,6 +43,7 @@ export function useFileUploadWithStatus() {
           : fileWithStatus.file;
 
       formData.append("data", uploadFile);
+      formData.append("user_id", user.value?.sub || "");
 
       try {
         const response = await $fetch<
