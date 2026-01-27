@@ -1,7 +1,7 @@
 <template>
   <section class="flex flex-col items-center justify-center mt-8">
     <div
-      class="flex flex-col items-center max-w-sm w-full justify-center border rounded p-4 px-8 bg-amber-100/5"
+      class="flex flex-col items-center max-w-sm sm:max-w-full w-full justify-center border rounded p-2 sm:p-4 sm:px-8 bg-amber-100/5"
     >
       <div class="flex flex-col">
         <div>
@@ -13,7 +13,7 @@
                 pomodoroController?.currPomodoro?.type === PomodoroType.FOCUS,
             }"
           >
-            Pomodoro
+            Focus
           </button>
           <button
             @click="handlePomodoroTypeChange(PomodoroType.BREAK)"
@@ -100,29 +100,8 @@
       <p>Today Completed #{{ pomodoroFocusCompletedToday }}</p>
     </div>
     <div class="max-w-sm w-full">
-      <div class="mt-4">
-        <div class="flex items-center justify-between p-1">
-          <p class="text-lg">Tasks</p>
-          <div>
-            <UPopover>
-              <UButton icon="i-lucide-menu" color="neutral" variant="outline" />
-
-              <template #content>
-                <div class="p-2">
-                  <UCheckbox
-                    v-model="taskController.showArchivedTasks.value"
-                    label="Show archived tasks"
-                    alt="Show archived tasks"
-                  />
-                </div>
-              </template>
-            </UPopover>
-          </div>
-        </div>
-        <USeparator class="mt-4" />
-        <TaskContainer class="mt-4" />
-        <ManageTagsModal v-model:open="manageTagModal" multiple />
-      </div>
+      <TaskContainer class="mt-4" />
+      <ManageTagsModal v-model:open="manageTagModal" multiple />
     </div>
   </section>
 </template>

@@ -1,6 +1,6 @@
 <template>
-  <UContainer class="pb-16">
-    <div class="py-4 flex items-baseline justify-between">
+  <UContainer class="mb-16 p-0">
+    <div class="py-4 flex items-baseline justify-between px-2">
       <div class="flex items-baseline">
         <i class="mr-1 w-6 flex self-center"
           ><img src="/check-focus.png" alt="focus"
@@ -36,7 +36,7 @@
     <USeparator />
 
     <!-- body -->
-    <div class="flex-1 flex justify-center">
+    <div class="flex justify-center h-full p-0 w-full min-w-full">
       <div class="">
         <YourfocusTimer :user_id="user_id" />
       </div>
@@ -49,20 +49,21 @@
         :modal="false"
         :handle="false"
         :ui="{
-          body: '',
           content: 'w-full max-w-full sm:max-w-[35vw] ',
           container: 'p-0 m-0',
         }"
       >
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-brain"
-          class="absolute bottom-4 right-4 rounded-4xl"
-          :ui="{
-            leadingIcon: 'w-12 h-12',
-          }"
-        />
+        <div class="fixed bottom-4 right-4 h-fit">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-brain"
+            class="rounded-4xl"
+            :ui="{
+              leadingIcon: 'w-12 h-12',
+            }"
+          />
+        </div>
 
         <template #body>
           <div class="flex flex-col w-full">
@@ -105,6 +106,14 @@ import TimelineModal from "~/components/timeline-modal .vue";
 const profileController = useProfileController();
 
 const openChatDrawer = ref(false);
+
+useHead({
+  bodyAttrs: {
+    class: computed(() =>
+      openChatDrawer.value ? "overflow-hidden sm:overflow-auto" : "",
+    ),
+  },
+});
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const user_id = computed(() => {

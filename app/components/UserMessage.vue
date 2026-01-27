@@ -28,7 +28,7 @@ function parseMarkdownLinks(text: string) {
 <template>
   <div class="relative group">
     <div
-      class="whitespace-pre-wrap text-sm transition-all duration-200"
+      class="text-sm transition-all duration-200 overflow-x-auto"
       :class="{
         'line-clamp-3 max-h-[4.5em] overflow-hidden': isLong && !isExpanded,
       }"

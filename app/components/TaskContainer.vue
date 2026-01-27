@@ -1,5 +1,27 @@
 <template>
   <div class="w-full max-w-sm self-center mt-2 flex flex-col justify-center">
+    <div class="flex items-center justify-between p-1">
+      <p class="text-lg">
+        Tasks {{ sortedTasks && `(${sortedTasks.length})` }}
+      </p>
+      <div>
+        <UPopover>
+          <UButton icon="i-lucide-menu" color="neutral" variant="outline" />
+
+          <template #content>
+            <div class="p-2">
+              <UCheckbox
+                v-model="taskController.showArchivedTasks.value"
+                label="Show archived tasks"
+                alt="Show archived tasks"
+              />
+            </div>
+          </template>
+        </UPopover>
+      </div>
+    </div>
+    <USeparator class="mt-4" />
+
     <!-- #regiond List of Tasks -->
     <div
       class="w-full max-w-sm mb-4 gap-2 flex flex-col max-h-[20rem] overflow-y-auto custom-scrollbar"
@@ -7,7 +29,7 @@
       <div
         v-for="task in sortedTasks"
         :key="task.id"
-        class="flex flex-row p-3 border rounded-md shadow-sm gap-2"
+        class="flex flex-row p-1 sm:p-3 border rounded-md shadow-sm gap-1 sm:gap-2 w-72 sm:w-fit"
         :class="{ 'opacity-50': task.done }"
       >
         <div class="flex items-center gap-2 w-16">
@@ -23,7 +45,9 @@
         </div>
         <div class="flex flex-col w-full">
           <div class="flex items-start justify-between">
-            <div class="w-60 text-wrap whitespace-normal wrap-anywhere">
+            <div
+              class="w-48 sm:w-2/3 text-wrap whitespace-normal wrap-anywhere"
+            >
               <p
                 class="flex flex-wrap whitespace-normal text-wrap font-medium"
                 :class="{ 'line-through ': task.done }"
@@ -67,10 +91,17 @@
               </UTooltip>
             </div>
           </div>
-          <!-- 
-          <p v-if="task.description" class="text-sm text-gray-600 pl-6">
+
+          <p
+            v-if="task.description"
+            class="text-sm text-gray-600 cursor-pointer overflow-hidden transition-all"
+            :style="{
+              maxHeight: expandedDescriptions[task.id] ? 'none' : '250px',
+            }"
+            @click="toggleDescription(task.id)"
+          >
             {{ task.description }}
-          </p> -->
+          </p>
 
           <div class="flex gap-1 items-center">
             <div class="flex items-center gap-1">
@@ -217,6 +248,11 @@ const form = reactive({
 
 const selectedTag = ref<{ id: number; label: string } | undefined>(undefined);
 const modalSelectedTask = ref<TTask>({} as TTask);
+const expandedDescriptions = ref<Record<string, boolean>>({});
+
+function toggleDescription(taskId: string) {
+  expandedDescriptions.value[taskId] = !expandedDescriptions.value[taskId];
+}
 
 const tagItems = computed(() => {
   return tagController.userTags.value.map((t) => ({
