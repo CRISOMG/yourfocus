@@ -45,6 +45,12 @@ export default defineNuxtConfig({
         process.env.N8N_GOOGLE_DRIVE_INBOX_WEBHOOK_URL,
       n8nAuthHeader: process.env.N8N_AUTH_HEADER,
     },
+    google: {
+      projectId: process.env.GOOGLE_PROJECT_ID,
+      privateKey: process.env.GOOGLE_PRIVATE_KEY,
+      clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
+      folderId: process.env.DRIVE_FOLDER_ID,
+    },
     n8nWebhookUrl: process.env.N8N_WEBHOOK_URL,
     n8nAuthHeader: process.env.N8N_AUTH_HEADER,
     n8nPostgresUrl: process.env.N8N_POSTGRES_URL,
