@@ -99,10 +99,7 @@
     <div class="flex justify-center mt-4">
       <p>Today Completed #{{ pomodoroFocusCompletedToday }}</p>
     </div>
-    <div class="max-w-sm w-full">
-      <TaskContainer class="mt-4" />
-      <ManageTagsModal v-model:open="manageTagModal" multiple />
-    </div>
+    <ManageTagsModal v-model:open="manageTagModal" multiple />
   </section>
 </template>
 

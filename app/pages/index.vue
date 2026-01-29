@@ -39,6 +39,7 @@
     <div class="flex justify-center h-full p-0 w-full min-w-full">
       <div class="">
         <YourfocusTimer :user_id="user_id" />
+        <TaskContainer class="mt-4" />
       </div>
 
       <UDrawer
@@ -104,7 +105,6 @@ import type { DropdownMenuItem } from "@nuxt/ui";
 import TimelineModal from "~/components/timeline-modal .vue";
 
 const profileController = useProfileController();
-
 const openChatDrawer = ref(false);
 
 useHead({

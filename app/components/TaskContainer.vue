@@ -21,10 +21,68 @@
       </div>
     </div>
     <USeparator class="mt-4" />
+    <!-- #region Add Task -->
+    <template v-if="createTaskModal">
+      <div class="border rounded-md p-4 flex flex-col gap-3">
+        <p class="text-sm font-semibold">Add New Task</p>
 
+        <UInput
+          v-model="form.title"
+          placeholder="What are you working on?"
+          size="sm"
+        />
+
+        <UTextarea
+          v-model="form.description"
+          placeholder="Description (optional)"
+          size="sm"
+          :rows="2"
+        />
+
+        <div class="flex gap-2">
+          <USelectMenu
+            class="w-full"
+            v-model="selectedTag"
+            :items="tagItems"
+            placeholder="Select Tag"
+            searchable
+            option-attribute="label"
+          />
+        </div>
+        <div class="flex gap-2">
+          <UButton @click="createTaskModal = false" color="neutral" size="sm">
+            Cancel
+          </UButton>
+          <UButton
+            @click="handleSubmit"
+            :loading="taskController.isLoading.value"
+            :disabled="!form.title"
+            color="primary"
+            size="sm"
+          >
+            Add
+          </UButton>
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <UButton
+        class="flex flex-row justify-center items-center p-3 border border-dashed rounded-md shadow-sm gap-2"
+        @click="createTaskModal = true"
+        color="neutral"
+        variant="ghost"
+        size="sm"
+      >
+        <span class="flex items-center my-auto">
+          <UIcon name="i-lucide-plus" class="size-5" />
+          Add Task
+        </span>
+      </UButton>
+    </template>
+    <!-- #endregion -->
     <!-- #regiond List of Tasks -->
     <div
-      class="w-full max-w-sm mb-4 gap-2 flex flex-col max-h-[20rem] overflow-y-auto custom-scrollbar"
+      class="w-full max-w-sm mt-4 mb-4 gap-2 flex flex-col max-h-screen overflow-y-auto custom-scrollbar"
     >
       <div
         v-for="task in sortedTasks"
@@ -130,65 +188,6 @@
     </div>
     <!-- #endregion List of Tasks -->
 
-    <!-- #region Add Task -->
-    <template v-if="createTaskModal">
-      <div class="border rounded-md p-4 flex flex-col gap-3">
-        <p class="text-sm font-semibold">Add New Task</p>
-
-        <UInput
-          v-model="form.title"
-          placeholder="What are you working on?"
-          size="sm"
-        />
-
-        <UTextarea
-          v-model="form.description"
-          placeholder="Description (optional)"
-          size="sm"
-          :rows="2"
-        />
-
-        <div class="flex gap-2">
-          <USelectMenu
-            class="w-full"
-            v-model="selectedTag"
-            :items="tagItems"
-            placeholder="Select Tag"
-            searchable
-            option-attribute="label"
-          />
-        </div>
-        <div class="flex gap-2">
-          <UButton @click="createTaskModal = false" color="neutral" size="sm">
-            Cancel
-          </UButton>
-          <UButton
-            @click="handleSubmit"
-            :loading="taskController.isLoading.value"
-            :disabled="!form.title"
-            color="primary"
-            size="sm"
-          >
-            Add
-          </UButton>
-        </div>
-      </div>
-    </template>
-    <template v-else>
-      <UButton
-        class="flex flex-row justify-center items-center p-3 border border-dashed rounded-md shadow-sm gap-2"
-        @click="createTaskModal = true"
-        color="neutral"
-        variant="ghost"
-        size="sm"
-      >
-        <span class="flex items-center my-auto">
-          <UIcon name="i-lucide-plus" class="size-5" />
-          Add Task
-        </span>
-      </UButton>
-    </template>
-    <!-- #endregion -->
     <ManageTagsModal
       v-model:open="manageTagModal"
       v-model:selected-item="modalSelectedTask.tag"
