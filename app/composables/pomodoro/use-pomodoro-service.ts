@@ -34,7 +34,7 @@ export const usePomodoroService = () => {
   }
 
   async function getOrCreateCurrentCycle(
-    userId: string
+    userId: string,
   ): Promise<PomodoroCycle> {
     const isCurrentCycleEnd = await checkIsCurrentCycleEnd();
     if (isCurrentCycleEnd) {
@@ -82,7 +82,7 @@ export const usePomodoroService = () => {
     const toggle_timeline = [];
 
     toggle_timeline.push({
-      at: started_at,
+      at: new Date().toISOString(),
       type: "start",
     });
 
@@ -104,7 +104,7 @@ export const usePomodoroService = () => {
 
   async function registToggleTimelinePomodoro(
     pomodoroId: number,
-    type: "play" | "pause"
+    type: "play" | "pause",
   ) {
     let { toggle_timeline, started_at, ...restPomodoro } =
       await pomodoroRepository.getOne(pomodoroId);
@@ -177,7 +177,7 @@ export const usePomodoroService = () => {
 
     const tagType = calculateNextTagFromCycleSecuence(
       pomodoroTagsTypesArray,
-      required_tags
+      required_tags,
     );
 
     return tagType as PomodoroType;
@@ -203,7 +203,7 @@ export const usePomodoroService = () => {
   async function addTagToPomodoro(
     pomodoroId: number,
     tagId: number,
-    userId: string
+    userId: string,
   ) {
     return await pomodoroRepository.addTag(pomodoroId, tagId, userId);
   }
@@ -215,7 +215,7 @@ export const usePomodoroService = () => {
   async function addTaskToPomodoro(
     pomodoroId: number,
     taskId: string,
-    userId: string
+    userId: string,
   ) {
     return await pomodoroRepository.addTask(pomodoroId, taskId, userId);
   }
