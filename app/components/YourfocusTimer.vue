@@ -149,8 +149,21 @@
 
       <!-- ===== FLOW MODE ===== -->
       <div v-else class="flex flex-col">
-        <!-- Jornada indicator -->
-        <div class="flex items-center justify-center gap-2 mb-4">
+        <!-- Jornada selector (when idle) -->
+        <div v-if="flowIsIdle" class="flex flex-col items-center gap-2 mb-4">
+          <span class="text-xs text-neutral-400 font-title">Flow hasta:</span>
+          <USelect
+            v-model="flowController.selectedJornadaValue.value"
+            :items="jornadaSelectItems"
+            placeholder="Bloque actual (auto)"
+            size="sm"
+            class="w-64"
+            icon="i-lucide-map-pin"
+          />
+        </div>
+
+        <!-- Jornada indicator (when running/paused) -->
+        <div v-else class="flex items-center justify-center gap-2 mb-4">
           <UIcon name="i-lucide-sun" class="size-4 text-primary-400" />
           <span class="text-sm font-title text-primary-400">
             {{ flowController.jornadaInfo.value.nombre }} ·
@@ -213,9 +226,18 @@
         <!-- Jornada description -->
         <div class="flex items-center justify-center">
           <span class="text-xs text-neutral-400">
-            {{ flowController.jornadaInfo.value.descripcion }}
+            {{ selectedJornadaDescription }}
           </span>
         </div>
+      </div>
+
+      <div
+        v-if="isPomodoroLoading"
+        class="absolute bottom-1 right-2 text-sm text-neutral-400"
+      >
+        <i>
+          <UIcon name="i-lucide-loader-2" class="animate-spin" />
+        </i>
       </div>
     </div>
 
@@ -327,6 +349,27 @@ const flowIsIdle = computed(
 const flowIsPaused = computed(
   () => flowController.flowState.value === flowController.FlowState.PAUSED,
 );
+
+// Jornada selector items for USelect
+const jornadaSelectItems = computed(() =>
+  flowController.jornadaOptions.value.map((opt) => ({
+    label: opt.label,
+    value: opt.value,
+  })),
+);
+
+// Description based on selection or current block
+const selectedJornadaDescription = computed(() => {
+  if (flowController.selectedJornadaValue.value) {
+    const opt = flowController.jornadaOptions.value.find(
+      (o) => o.value === flowController.selectedJornadaValue.value,
+    );
+    return (
+      opt?.bloque.descripcion || flowController.jornadaInfo.value.descripcion
+    );
+  }
+  return flowController.jornadaInfo.value.descripcion;
+});
 
 const isTypeOfFocus = computed(
   () => pomodoroController?.currPomodoro?.type === PomodoroType.FOCUS,

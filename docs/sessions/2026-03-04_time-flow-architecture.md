@@ -66,7 +66,7 @@ app/composables/time/flow/
 
 ## Pendientes
 
-- [ ] Reorganizar composables de Pomodoro en `app/composables/time/pomodoro/`
+- [x] Reorganizar composables de Pomodoro en `app/composables/time/pomodoro/`
 - [ ] Selección de límite de jornada configurable por usuario
 - [ ] Tests unitarios para `time-domain.ts` y `use-stopwatch.ts`
 - [ ] Backfill de pomodoros existentes con `time_session_id`

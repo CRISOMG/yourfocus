@@ -1,4 +1,5 @@
 import type { TimelineEvent } from "~/composables/types";
+import type { BloqueJornada } from "~~/shared/utils/v2/jornada";
 import {
   getCurrentJornadaBlock,
   getJornadaLimitTimestamp,
@@ -13,9 +14,10 @@ export const useFlowService = () => {
 
   /**
    * Start a new flow session.
-   * Detects the current jornada block and calculates the limit.
+   * If targetBlock is provided, uses it as the limit.
+   * Otherwise, auto-detects the current jornada block.
    */
-  async function startFlow(userId: string) {
+  async function startFlow(userId: string, targetBlock?: BloqueJornada) {
     // Guard: check if there's already an active flow
     const existing = await flowRepository.getCurrentFlow();
     if (existing) {
@@ -26,8 +28,12 @@ export const useFlowService = () => {
     }
 
     const now = new Date();
-    const bloque = getCurrentJornadaBlock(now);
-    const limitAt = getJornadaLimitTimestamp(now);
+    const bloque = targetBlock || getCurrentJornadaBlock(now);
+    const limitAt = getJornadaLimitTimestamp(
+      now,
+      "America/Caracas",
+      targetBlock,
+    );
 
     const flow = await flowRepository.insertFlow({
       user_id: userId,

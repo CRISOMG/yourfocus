@@ -41,22 +41,23 @@ export function getCurrentJornadaBlock(
 }
 
 /**
- * Calculates the ISO timestamp when the current jornada block ends.
- * This is the natural "limit" for a FLOW session.
+ * Calculates the ISO timestamp when a jornada block ends.
+ * If targetBlock is provided, uses that block instead of the current one.
  */
 export function getJornadaLimitTimestamp(
   now: Date = new Date(),
   timeZone: string = "America/Caracas",
+  targetBlock?: BloqueJornada,
 ): string {
-  const bloque = getCurrentJornadaBlock(now, timeZone);
+  const bloque = targetBlock || getCurrentJornadaBlock(now, timeZone);
 
-  // Build the limit date at the end of the current block
+  // Build the limit date at the end of the target block
   const tzDate = new Date(now.toLocaleString("en-US", { timeZone }));
   const limitDate = new Date(tzDate);
 
   limitDate.setHours(bloque.finHora, bloque.finMinuto, 0, 0);
 
-  // If the limit is before now (crosses midnight), add a day
+  // If the limit is before now (crosses midnight or past block), add a day
   if (limitDate.getTime() <= tzDate.getTime()) {
     limitDate.setDate(limitDate.getDate() + 1);
   }
@@ -100,4 +101,49 @@ export function getJornadaDisplayInfo(
     descripcion: bloque.descripcion,
     limitLabel,
   };
+}
+
+export type JornadaOption = {
+  label: string;
+  value: string; // nombre del bloque
+  limitLabel: string;
+  bloque: BloqueJornada;
+};
+
+/**
+ * Returns jornada blocks from the current one onward (within the same day).
+ * Each option includes the block name, its end time label, and the block data.
+ * Used to populate the jornada limit selector in the Flow UI.
+ */
+export function getRemainingJornadaOptions(
+  now: Date = new Date(),
+  timeZone: string = "America/Caracas",
+): JornadaOption[] {
+  const currentBlock = getCurrentJornadaBlock(now, timeZone);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  // Find the index of the current block
+  const currentIndex = JORNADAS.findIndex(
+    (j) => j.nombre === currentBlock.nombre,
+  );
+
+  // Get blocks from current onward, excluding sleep blocks
+  const remaining: JornadaOption[] = [];
+  for (let i = currentIndex; i < JORNADAS.length; i++) {
+    const j = JORNADAS[i]!;
+    // Stop at sleep blocks (descanso)
+    if (j.tipo === "descanso") break;
+
+    const nombreCap = j.nombre.charAt(0).toUpperCase() + j.nombre.slice(1);
+    const limitLabel = `${pad(j.finHora)}:${pad(j.finMinuto)}`;
+
+    remaining.push({
+      label: `${nombreCap} — hasta ${limitLabel}`,
+      value: j.nombre,
+      limitLabel,
+      bloque: j,
+    });
+  }
+
+  return remaining;
 }

@@ -1,5 +1,10 @@
 import type { TFlow } from "./use-flow-repository";
-import { getJornadaDisplayInfo } from "~/utils/time-domain";
+import type { BloqueJornada } from "~~/shared/utils/v2/jornada";
+import {
+  getJornadaDisplayInfo,
+  getRemainingJornadaOptions,
+  type JornadaOption,
+} from "~/utils/time-domain";
 import { calculatePomodoroTimelapse } from "~/utils/pomodoro-domain";
 
 enum FlowState {
@@ -22,15 +27,28 @@ export const useFlowController = () => {
   const loading = ref(false);
   const jornadaInfo = ref(getJornadaDisplayInfo());
 
+  // Jornada selector state
+  const jornadaOptions = ref<JornadaOption[]>(getRemainingJornadaOptions());
+  const selectedJornadaValue = ref<string | undefined>(undefined);
+
+  // Computed: the selected block object (or null for auto/current)
+  const selectedBlock = computed<BloqueJornada | undefined>(() => {
+    if (!selectedJornadaValue.value) return undefined;
+    const opt = jornadaOptions.value.find(
+      (o) => o.value === selectedJornadaValue.value,
+    );
+    return opt?.bloque;
+  });
+
   // Update jornada info every minute
   const jornadaInterval = ref<NodeJS.Timeout | null>(null);
 
   function startJornadaUpdater() {
-    // Update immediately
     jornadaInfo.value = getJornadaDisplayInfo();
-    // Then every 60s
+    jornadaOptions.value = getRemainingJornadaOptions();
     jornadaInterval.value = setInterval(() => {
       jornadaInfo.value = getJornadaDisplayInfo();
+      jornadaOptions.value = getRemainingJornadaOptions();
     }, 60_000);
   }
 
@@ -53,10 +71,9 @@ export const useFlowController = () => {
 
         if (existing.time_session.state === "current") {
           flowState.value = FlowState.RUNNING;
-          // Resume the stopwatch with accumulated timelapse
           const elapsed = calculatePomodoroTimelapse(
             existing.time_session.toggle_timeline,
-            Infinity, // no cap for flow
+            Infinity,
           );
           stopwatch.startStopwatch({
             resumeFromSeconds: elapsed,
@@ -65,7 +82,6 @@ export const useFlowController = () => {
           });
         } else if (existing.time_session.state === "paused") {
           flowState.value = FlowState.PAUSED;
-          // Show elapsed time without running
           const elapsed = calculatePomodoroTimelapse(
             existing.time_session.toggle_timeline,
             Infinity,
@@ -82,7 +98,7 @@ export const useFlowController = () => {
   }
 
   /**
-   * Start a new flow.
+   * Start a new flow with the selected jornada limit.
    */
   async function handleStart() {
     const userId = profile.value?.id;
@@ -90,7 +106,7 @@ export const useFlowController = () => {
 
     loading.value = true;
     try {
-      const flow = await flowService.startFlow(userId);
+      const flow = await flowService.startFlow(userId, selectedBlock.value);
       if (flow) {
         currentFlow.value = flow;
         flowState.value = FlowState.RUNNING;
@@ -118,7 +134,6 @@ export const useFlowController = () => {
       currentFlow.value.time_session.toggle_timeline,
     );
 
-    // Update local timeline
     currentFlow.value.time_session.toggle_timeline.push({
       at: new Date().toISOString(),
       type: "pause",
@@ -138,13 +153,11 @@ export const useFlowController = () => {
       currentFlow.value.time_session.toggle_timeline,
     );
 
-    // Update local timeline
     currentFlow.value.time_session.toggle_timeline.push({
       at: new Date().toISOString(),
       type: "play",
     });
 
-    // Resume stopwatch
     stopwatch.startStopwatch({
       resumeFromSeconds: stopwatch.elapsedSeconds.value,
       limitAt: currentFlow.value.jornada_limit_at || undefined,
@@ -169,6 +182,8 @@ export const useFlowController = () => {
     );
 
     currentFlow.value = null;
+    // Reset selector for next session
+    selectedJornadaValue.value = undefined;
   }
 
   /**
@@ -210,6 +225,9 @@ export const useFlowController = () => {
     flowState: readonly(flowState),
     loading: readonly(loading),
     jornadaInfo: readonly(jornadaInfo),
+    // Jornada selector
+    jornadaOptions: readonly(jornadaOptions),
+    selectedJornadaValue,
     // Stopwatch
     clockDisplay: stopwatch.clockDisplay,
     elapsedSeconds: stopwatch.elapsedSeconds,
