@@ -303,6 +303,7 @@ const {
   handleFinishPomodoro,
   handleListPomodoros,
   handleSelectPomodoro,
+  handleSwitchType,
   timeController,
 } = usePomodoroController();
 
@@ -316,9 +317,7 @@ const handlePomodoroTypeChange = async (type: PomodoroType) => {
   if (pomodoroController?.currPomodoro?.type === type) {
     return alert("You are already in " + type);
   }
-  debugger;
-  await handleSkipPomodoro();
-  await handleSelectPomodoro(props.user_id, type);
+  handleSwitchType(props.user_id, type);
 };
 
 const handlePlayPausePomodoro = () => {

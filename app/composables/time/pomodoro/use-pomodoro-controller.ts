@@ -27,7 +27,6 @@ export const usePomodoroController = defineStore("pomodoro", () => {
   //#region STATE
   const pomodorosListToday = ref<TPomodoro[]>([]);
   const loadingPomodoros = ref<boolean>(false);
-  const loadingPomodoro = ref<boolean>(false);
   //#endregion
 
   //#region HELPER FUNCTIONS
@@ -109,6 +108,22 @@ export const usePomodoroController = defineStore("pomodoro", () => {
 
   const { snapshot, send } = useMachine(pomodoroMachine);
 
+  // Derive loading from machine state — covers ALL async transitions
+  const LOADING_STATES: Set<string> = new Set([
+    PomodoroMachineState.FETCHING,
+    PomodoroMachineState.STARTING,
+    PomodoroMachineState.FINISHING,
+    PomodoroMachineState.SKIPPING,
+    PomodoroMachineState.SWITCHING,
+    PomodoroMachineState.CREATING_NEXT,
+  ]);
+
+  const loadingPomodoro = computed(() =>
+    LOADING_STATES.has(snapshot.value.value as string),
+  );
+
+  const machineState = computed(() => snapshot.value.value as string);
+
   // Initialize once profile is available
   watch(
     () => profile.value?.id,
@@ -117,7 +132,6 @@ export const usePomodoroController = defineStore("pomodoro", () => {
         const current = await pomodoroService.getCurrentPomodoro();
         if (!current) {
           try {
-            loadingPomodoro.value = true;
             await pomodoroService.startPomodoro({
               user_id: id,
               state: "idle",
@@ -128,8 +142,6 @@ export const usePomodoroController = defineStore("pomodoro", () => {
               "[init] Could not create idle pomodoro (likely already exists):",
               e?.message || e,
             );
-          } finally {
-            loadingPomodoro.value = false;
           }
         }
         send({ type: PomodoroMachineEvent.INIT });
@@ -209,6 +221,14 @@ export const usePomodoroController = defineStore("pomodoro", () => {
     send({ type: PomodoroMachineEvent.SKIP });
   }
 
+  function handleSwitchType(user_id: string, targetType: string) {
+    send({
+      type: PomodoroMachineEvent.SWITCH_TYPE,
+      targetType,
+      user_id,
+    });
+  }
+
   // Tags
   async function handleAddTag(tagId: number) {
     if (!snapshot.value.context.pomodoro?.id) return;
@@ -262,6 +282,7 @@ export const usePomodoroController = defineStore("pomodoro", () => {
     pomodorosListToday,
     loadingPomodoros,
     loadingPomodoro,
+    machineState,
     broadcastStatus: broadcastPomodoroController.connectionStatus,
     broadcastError: broadcastPomodoroController.connectionError,
     getCurrentPomodoro: () => send({ type: PomodoroMachineEvent.INIT }),
@@ -270,6 +291,7 @@ export const usePomodoroController = defineStore("pomodoro", () => {
     handleFinishPomodoro,
     handleResetPomodoro,
     handleSkipPomodoro,
+    handleSwitchType,
     handleSyncPomodoro,
     handleListPomodoros,
     handleSelectPomodoro,

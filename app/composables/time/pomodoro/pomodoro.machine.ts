@@ -15,6 +15,7 @@ export enum PomodoroMachineEvent {
   FINISH = "FINISH",
   RESET = "RESET",
   SKIP = "SKIP",
+  SWITCH_TYPE = "SWITCH_TYPE",
   SYNC = "SYNC",
   BROADCAST_PLAY = "BROADCAST.PLAY",
   BROADCAST_PAUSE = "BROADCAST.PAUSE",
@@ -34,6 +35,7 @@ export enum PomodoroMachineState {
   RESUMING = "resuming",
   FINISHING = "finishing",
   SKIPPING = "skipping",
+  SWITCHING = "switching",
   CREATING_NEXT = "creatingNext",
 }
 
@@ -44,6 +46,7 @@ export const MachineActors = {
   START_TIMER: "startTimerActor",
   FINISH_POMODORO: "finishPomodoro",
   SKIP_POMODORO: "skipPomodoro",
+  SWITCH_POMODORO: "switchPomodoro",
   CREATE_NEXT: "createNextPomodoro",
 } as const;
 
@@ -60,6 +63,7 @@ export const MachineActions = {
   BROADCAST_NEXT: "broadcastNext",
   NOTIFY_FINISH: "notifyFinish",
   REFRESH_LIST: "refreshList",
+  CLEAR_TIMER: "clearTimer",
   HANDLE_ERROR: "handleError",
 } as const;
 
@@ -85,6 +89,11 @@ type MachineEvents =
     }
   | { type: PomodoroMachineEvent.RESET }
   | { type: PomodoroMachineEvent.SKIP; withNext?: boolean }
+  | {
+      type: PomodoroMachineEvent.SWITCH_TYPE;
+      targetType: string;
+      user_id: string;
+    }
   | { type: PomodoroMachineEvent.SYNC; pomodoro: TPomodoro }
   | { type: PomodoroMachineEvent.BROADCAST_PLAY; payload: any }
   | { type: PomodoroMachineEvent.BROADCAST_PAUSE; payload: any }
@@ -211,6 +220,39 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
           return { cycleEnded };
         },
       ),
+      [MachineActors.SWITCH_POMODORO]: fromPromise(
+        async ({
+          input,
+        }: {
+          input: { pomodoro: TPomodoro; targetType: string; user_id: string };
+        }) => {
+          // 1. Skip current
+          await pomodoroService.skipCurrentPomodoro({
+            timelapse: input.pomodoro.timelapse,
+          });
+          const cycleEnded = await pomodoroService.checkIsCurrentCycleEnd();
+          if (cycleEnded) {
+            await pomodoroService.finishCurrentCycle();
+          }
+          // 2. Create next with desired type via startPomodoro
+          const next = await pomodoroService.startPomodoro({
+            user_id: input.user_id,
+            type: input.targetType as any,
+            state: "current",
+          });
+          // 3. Keep tags if enabled
+          if (keepTags.value && input.pomodoro.tags?.length) {
+            for (const tag of input.pomodoro.tags) {
+              await pomodoroService.addTagToPomodoro(
+                next.id,
+                tag.id,
+                input.user_id,
+              );
+            }
+          }
+          return await pomodoroService.getOne(next.id);
+        },
+      ),
       [MachineActors.CREATE_NEXT]: fromPromise(
         async ({
           input,
@@ -330,6 +372,9 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
         // });
       },
       [MachineActions.REFRESH_LIST]: () => handleListPomodoros(),
+      [MachineActions.CLEAR_TIMER]: () => {
+        timeController.clearTimer();
+      },
       [MachineActions.HANDLE_ERROR]: ({ event }: any) => {
         console.error("Pomodoro Machine Error:", event.error);
         toast.addErrorToast({
@@ -425,8 +470,18 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
             target: PomodoroMachineState.PAUSING,
             actions: MachineActions.OPTIMISTIC_PAUSE,
           },
-          [PomodoroMachineEvent.FINISH]: PomodoroMachineState.FINISHING,
-          [PomodoroMachineEvent.SKIP]: PomodoroMachineState.SKIPPING,
+          [PomodoroMachineEvent.FINISH]: {
+            target: PomodoroMachineState.FINISHING,
+            actions: MachineActions.CLEAR_TIMER,
+          },
+          [PomodoroMachineEvent.SKIP]: {
+            target: PomodoroMachineState.SKIPPING,
+            actions: MachineActions.CLEAR_TIMER,
+          },
+          [PomodoroMachineEvent.SWITCH_TYPE]: {
+            target: PomodoroMachineState.SWITCHING,
+            actions: MachineActions.CLEAR_TIMER,
+          },
           [PomodoroMachineEvent.TIMER_FINISH]: PomodoroMachineState.FINISHING,
           [PomodoroMachineEvent.BROADCAST_PAUSE]: {
             target: PomodoroMachineState.PAUSED,
@@ -468,8 +523,18 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
             target: PomodoroMachineState.RESUMING,
             actions: MachineActions.OPTIMISTIC_PLAY,
           },
-          [PomodoroMachineEvent.FINISH]: PomodoroMachineState.FINISHING,
-          [PomodoroMachineEvent.SKIP]: PomodoroMachineState.SKIPPING,
+          [PomodoroMachineEvent.FINISH]: {
+            target: PomodoroMachineState.FINISHING,
+            actions: MachineActions.CLEAR_TIMER,
+          },
+          [PomodoroMachineEvent.SKIP]: {
+            target: PomodoroMachineState.SKIPPING,
+            actions: MachineActions.CLEAR_TIMER,
+          },
+          [PomodoroMachineEvent.SWITCH_TYPE]: {
+            target: PomodoroMachineState.SWITCHING,
+            actions: MachineActions.CLEAR_TIMER,
+          },
           [PomodoroMachineEvent.BROADCAST_PLAY]: {
             target: PomodoroMachineState.RUNNING,
             actions: MachineActions.ASSIGN_POMODORO,
@@ -541,6 +606,42 @@ export const createPomodoroMachine = (deps: PomodoroMachineDeps) => {
               ],
             },
           ],
+        },
+      },
+      [PomodoroMachineState.SWITCHING]: {
+        invoke: {
+          src: MachineActors.SWITCH_POMODORO,
+          input: ({ context, event }: any) => ({
+            pomodoro: context.pomodoro!,
+            targetType: event.targetType,
+            user_id: event.user_id || context.pomodoro!.user_id,
+          }),
+          onDone: [
+            {
+              guard: ({ event }: any) => event.output?.state === "current",
+              target: PomodoroMachineState.RUNNING,
+              actions: [
+                MachineActions.ASSIGN_POMODORO,
+                MachineActions.BROADCAST_SKIP,
+                MachineActions.BROADCAST_NEXT,
+                MachineActions.REFRESH_LIST,
+              ],
+            },
+            {
+              target: PomodoroMachineState.IDLE,
+              actions: [
+                MachineActions.ASSIGN_POMODORO,
+                MachineActions.BROADCAST_SKIP,
+                MachineActions.BROADCAST_NEXT,
+                MachineActions.UPDATE_TIME_ON_NEXT,
+                MachineActions.REFRESH_LIST,
+              ],
+            },
+          ],
+          onError: {
+            target: PomodoroMachineState.IDLE,
+            actions: MachineActions.HANDLE_ERROR,
+          },
         },
       },
       [PomodoroMachineState.CREATING_NEXT]: {
