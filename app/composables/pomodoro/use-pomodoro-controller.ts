@@ -122,8 +122,12 @@ export const usePomodoroController = defineStore("pomodoro", () => {
               user_id: id,
               state: "idle",
             });
-          } catch (e) {
-            console.error(e);
+          } catch (e: any) {
+            // Constraint violation (idx_unique_active_pomodoro_per_user) or race condition
+            console.warn(
+              "[init] Could not create idle pomodoro (likely already exists):",
+              e?.message || e,
+            );
           } finally {
             loadingPomodoro.value = false;
           }

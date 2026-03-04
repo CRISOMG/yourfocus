@@ -76,6 +76,15 @@ export const usePomodoroService = () => {
     state = "paused",
     type,
   }: TStartPomodoroProps) {
+    // Guard: prevent creating a duplicate active pomodoro
+    const existing = await pomodoroRepository.getCurrentPomodoro();
+    if (existing) {
+      console.warn(
+        `[startPomodoro] Active pomodoro already exists (id: ${existing.id}, state: ${existing.state}). Returning existing.`,
+      );
+      return existing as TPomodoro;
+    }
+
     const cycle = await getOrCreateCurrentCycle(user_id);
 
     const _type: PomodoroType =

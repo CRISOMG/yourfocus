@@ -86,11 +86,8 @@ export const useBroadcastPomodoro = (handlers: TBroadcastEvents) => {
         if (status === "CHANNEL_ERROR") {
           console.error("❌ Error en el canal de broadcast:", err);
           connectionStatus.value = "error";
-          connectionError.value =
-            err?.message || "Error de conexión en el canal de sincronización";
-          // Asegurar que isMainHandler sea true cuando falla el canal
-          // para que el flujo de crear siguiente pomodoro no se bloquee
-          isMainHandler.value = true;
+          connectionError.value = "Sincronización de pestañas desactivada";
+          isMainHandler.value = false;
         }
       });
   };
