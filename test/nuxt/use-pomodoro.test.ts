@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { setup } from "@nuxt/test-utils";
-import { usePomodoroCycleRepository } from "~/composables/pomodoro/use-pomodoro-repository";
-import { usePomodoroService } from "~/composables/pomodoro/use-pomodoro-service";
+import { usePomodoroCycleRepository } from "~/composables/time/pomodoro/use-pomodoro-repository";
+import { usePomodoroService } from "~/composables/time/pomodoro/use-pomodoro-service";
 import type { AuthTokenResponsePassword } from "@supabase/supabase-js";
 
 describe("Feature Pomodoro", () => {
@@ -51,7 +51,7 @@ describe("Feature Pomodoro", () => {
   it("[[Domain Logic Level]] [pomodoroDomain.hasCycleFinished] debe retornar TRUE si el ciclo ha finalizado en base a la lista de tags", async () => {
     const result = hasCycleFinished(
       ["focus", "break", "focus", "long-break"],
-      ["focus", "break", "focus", "long-break"]
+      ["focus", "break", "focus", "long-break"],
     );
     expect(result).toBe(true);
   });
@@ -59,7 +59,7 @@ describe("Feature Pomodoro", () => {
   it("[[Domain Logic Level]] [pomodoroDomain.hasCycleFinished] debe retornar FALSE si el ciclo no ha finalizado en base a la lista de tags sin importar el orden", async () => {
     const result = hasCycleFinished(
       ["focus", "focus", "break"],
-      ["focus", "break", "focus", "long-break"]
+      ["focus", "break", "focus", "long-break"],
     );
     expect(result).toBe(false);
   });
@@ -68,15 +68,15 @@ describe("Feature Pomodoro", () => {
     expect(
       calculateNextTagFromCycleSecuence(
         ["focus", "break"],
-        ["focus", "break", "focus", "long-break"]
-      )
+        ["focus", "break", "focus", "long-break"],
+      ),
     ).toBe("focus");
 
     expect(
       calculateNextTagFromCycleSecuence(
         ["focus", "focus"],
-        ["focus", "break", "focus", "long-break"]
-      )
+        ["focus", "break", "focus", "long-break"],
+      ),
     ).toBe("long-break");
   });
 

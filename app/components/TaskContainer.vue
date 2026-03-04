@@ -349,7 +349,7 @@
 <script setup lang="ts">
 import { useTaskController } from "~/composables/task/use-task-controller";
 import { useTagController } from "~/composables/tag/use-tag-controller";
-import { usePomodoroController } from "~/composables/pomodoro/use-pomodoro-controller";
+import { usePomodoroController } from "~/composables/time/pomodoro/use-pomodoro-controller";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import type { Database } from "~/types/database.types";
 

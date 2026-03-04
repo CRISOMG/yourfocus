@@ -5,7 +5,7 @@ import {
   createTimelineEntry,
   DEFAULT_DURATION_SECONDS,
 } from "~/utils/pomodoro-domain";
-import type { TPomodoro } from "../types";
+import type { TPomodoro } from "../../types";
 
 export enum PomodoroMachineEvent {
   INIT = "INIT",

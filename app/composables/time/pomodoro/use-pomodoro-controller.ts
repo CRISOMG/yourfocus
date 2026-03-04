@@ -1,5 +1,5 @@
 import { useMachine } from "@xstate/vue";
-import { useNotificationController } from "../system/use-notification-controller";
+import { useNotificationController } from "../../system/use-notification-controller";
 import {
   PomodoroDurationInSecondsByDefaultCycleConfiguration,
   TagIdByType,
@@ -7,7 +7,7 @@ import {
   DEFAULT_TIME_INTERVAL_CONFIGS,
 } from "~/utils/pomodoro-domain";
 import { useBroadcastPomodoro } from "./use-broadcast-pomodoro";
-import type { TPomodoro } from "../types";
+import type { TPomodoro } from "../../types";
 import {
   createPomodoroMachine,
   PomodoroMachineEvent,
