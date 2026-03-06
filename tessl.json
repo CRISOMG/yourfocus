@@ -1,0 +1,91 @@
+{
+  "name": "project",
+  "dependencies": {
+    "tessl/npm-ai-sdk--google": {
+      "version": "2.0.0"
+    },
+    "tessl/npm-ai-sdk--provider": {
+      "version": "2.0.0"
+    },
+    "tessl/npm-vueuse--core": {
+      "version": "13.9.0"
+    },
+    "tessl/npm-vueuse--nuxt": {
+      "version": "13.9.0"
+    },
+    "tessl/npm-ai": {
+      "version": "5.0.1"
+    },
+    "tessl/npm-date-fns": {
+      "version": "4.1.0"
+    },
+    "tessl/npm-happy-dom": {
+      "version": "18.0.0"
+    },
+    "tessl/npm-jsonwebtoken": {
+      "version": "9.0.0"
+    },
+    "tessl/npm-luxon": {
+      "version": "2.5.0"
+    },
+    "tessl/npm-nuxt": {
+      "version": "4.1.0"
+    },
+    "tessl/npm-pg": {
+      "version": "8.16.0"
+    },
+    "tessl/npm-pinia": {
+      "version": "3.0.0"
+    },
+    "tessl/npm-postgres": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-vitest": {
+      "version": "4.0.0"
+    },
+    "tessl/npm-vue": {
+      "version": "3.5.0"
+    },
+    "tessl/npm-vue-router": {
+      "version": "3.6.0"
+    },
+    "tessl/npm-xstate": {
+      "version": "5.21.0"
+    },
+    "tessl/npm-zod": {
+      "version": "4.3.0"
+    },
+    "tessl/npm-supabase--supabase-js": {
+      "version": "2.57.0"
+    },
+    "supabase/agent-skills": {
+      "version": "760460c221d30d0db904ff28e8fa52af85672255",
+      "source": "https://github.com/supabase/agent-skills"
+    },
+    "onmax/nuxt-skills": {
+      "version": "7c2808158af44c0e31d00d1d303be776b68e46c7",
+      "source": "https://github.com/onmax/nuxt-skills",
+      "include": {
+        "skills": [
+          "document-writer",
+          "motion",
+          "nuxt",
+          "nuxt-content",
+          "nuxt-modules",
+          "nuxt-seo",
+          "nuxt-ui",
+          "nuxthub",
+          "pnpm",
+          "reka-ui",
+          "tresjs",
+          "ts-library",
+          "tsdown",
+          "vite",
+          "vitest",
+          "vue",
+          "vueuse"
+        ]
+      }
+    }
+  }
+}
