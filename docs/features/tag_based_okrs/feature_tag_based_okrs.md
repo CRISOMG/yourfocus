@@ -14,6 +14,7 @@
 | **Estado**               | `Draft`                                                              |
 | **Owner**                | Cris (TPM / TPE)                                                     |
 | **Dominio (DDD)**        | Gestión de Objetivos / Métricas de Productividad / Intervención TDAH |
+| **Módulo (Bounded Ctx)** | Gestión de Objetivos                                                 |
 | **Fecha de creación**    | 2026-03-05                                                           |
 | **Última actualización** | 2026-03-05                                                           |
 | **Sprint / Ciclo**       | Pendiente de planificación                                           |
@@ -23,6 +24,7 @@
 ## 1. Capa de Descubrimiento (Contexto de Negocio) — TPM
 
 > **Propósito:** Alineación con el Lean Canvas y el valor para el usuario.
+> _Ref: [Paradigma §2 Capa A](../../convenions/planning_and_design/index.md#capa-a-descubrimiento--enfoque-en-el-problema-tpm) + [§9 Features como Mini-Productos](../../convenions/planning_and_design/index.md#9-features-como-mini-productos-lean-canvas-por-feature)_
 
 ### User Stories
 
@@ -81,11 +83,26 @@ El usuario experimenta un **triángulo de parálisis por análisis**:
 | **Ejecución**    | `tasks`            | La agencia y el avance real |
 | **Conocimiento** | Notas Zettelkasten | La curiosidad y retención   |
 
+### Mini Lean Canvas — Tag-Based OKRs
+
+> Vínculo con el [Lean Canvas principal](../../business_model_canvas/lean_canvas.md).
+
+| Sección               | Descripción                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| **Problema**          | Sobrecarga cognitiva, brecha ejecución-idea, fragmentación de herramientas                |
+| **Segmento**          | Desarrolladores autodidactas con TDAH, profesionales en transición, founders técnicos     |
+| **UVP**               | "Kaizen-based active knowledge management" — el 1% diario medido automáticamente          |
+| **Solución**          | Inbox anti-parálisis + Atomización IA + Tags con pesos + Dashboard del 1%                 |
+| **Métricas Clave**    | North Star: Pomodoros/usuario/semana → alimentan KRs automáticamente                      |
+| **Ventaja Injusta**   | Ontología de 6 cualidades cognitivas + perfil personalizado por usuario                   |
+| **Vínculo al Canvas** | Implementa el UVP, resuelve los 3 problemas top, potencia North Star y Retención M1 > 40% |
+
 ---
 
 ## 2. Capa de Definición (Requerimientos) — Bridge TPM ↔ TPE
 
 > **Propósito:** Reglas de negocio claras y límites del sistema.
+> _Ref: [Paradigma §2 Capa B](../../convenions/planning_and_design/index.md#capa-b-definición--enfoque-en-la-solución-bridge-tpm--tpe)_
 
 ### Requerimientos Funcionales (RF)
 
@@ -111,6 +128,8 @@ El usuario experimenta un **triángulo de parálisis por análisis**:
 
 ### Criterios de Aceptación
 
+<!-- Estos criterios son la base directa de los escenarios BDD en la Capa 3 (pipeline: Criterios → BDD → TDD) -->
+
 - [ ] Un OKR puede tener múltiples KR, y cada KR se alimenta de múltiples tags con pesos configurables.
 - [ ] El Inbox muestra solo la acción de mayor prioridad; las demás están ocultas hasta resolución.
 - [ ] Al crear una tarea > 25 min, se dispara el modal de Atomización IA y se generan 3 subtareas con tags heredados.
@@ -123,7 +142,10 @@ El usuario experimenta un **triángulo de parálisis por análisis**:
 
 ## 3. Capa de Especificación (BDD & Comportamiento) — TPE
 
-> **Propósito:** Convertir los requerimientos en escenarios testeables.
+> **Propósito:** Convertir los requerimientos en escenarios testeables. Los escenarios BDD facilitan la transición directa a TDD.
+> _Ref: [Paradigma §3 Metodologías de Especificación](../../convenions/planning_and_design/index.md#3-metodologías-de-especificación--bdd-vdm-y-featuremodule-structure)_
+>
+> **Pipeline:** Criterios de Aceptación (Capa 2) → Escenarios BDD (Capa 3) → Tests automatizados (TDD)
 
 ### Escenarios BDD (Gherkin)
 
@@ -215,11 +237,24 @@ R-Rule dispara evento → Edge Function INSERT inbox_action
               Feedback: "+X% a tu KR hoy"
 ```
 
+### Especificación Formal (VDM) — Operaciones Críticas
+
+> Para componentes de alta criticidad donde el comportamiento debe ser formalmente verificable.
+> _Ref: [Paradigma §3.2 Vienna Development Method](../../convenions/planning_and_design/index.md#32-vienna-development-method-vdm)_
+
+| Operación                    | Pre-condición                                         | Post-condición                                                  | Invariante                             |
+| ---------------------------- | ----------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------- |
+| `calcular_progreso_kr`       | KR existe, tiene ≥1 tag con peso, pomodoro completado | `current_value` incrementado por `Σ(peso × métrica_base)`       | `current_value ≤ target_value`         |
+| `atomizar_tarea`             | Tarea con estimación > 1 pomodoro, IA disponible      | 3 subtareas creadas, cada una = 1 pomodoro, tags heredados      | `Σ subtareas.pomodoros = 3`            |
+| `resolver_inbox_action`      | `inbox_action.status == 'pending'`                    | `status` cambia a `completed` o `dismissed`, `completed_at` set | Nunca se eliminan, solo cambian estado |
+| `mostrar_accion_prioritaria` | ≥1 `inbox_action` con `status == 'pending'`           | Se muestra solo la de mayor `priority`                          | Solo 1 acción visible a la vez         |
+
 ---
 
 ## 4. Capa de Ingeniería y Ciencias de la Computación — TPE
 
 > **Propósito:** Criterio técnico senior para evitar deuda técnica.
+> _Ref: [Paradigma §4 Criterio de Ingeniería](../../convenions/planning_and_design/index.md#4-criterio-de-ingeniería-de-software-y-ciencias-de-la-computación)_
 
 ### Arquitectura de Datos
 
@@ -394,6 +429,7 @@ const handleNotificationClick = (action: InboxAction) => {
 ## 5. Gestión de Deuda e Incertidumbre
 
 > **Propósito:** Documentar lo que no sabemos hoy para que no se convierta en deuda técnica mañana.
+> _Ref: [Paradigma §5 Gestión de Incertidumbre](../../convenions/planning_and_design/index.md#5-gestión-de-incertidumbre-y-deuda-técnica)_
 
 ### Preguntas Abiertas (Incertidumbre)
 
@@ -434,7 +470,28 @@ const handleNotificationClick = (action: InboxAction) => {
 
 ---
 
-## 6. Principios de Diseño para TDAH
+## 6. Impacto en Bienestar y Sostenibilidad
+
+> **Propósito:** Evaluar el costo cognitivo de esta feature para el usuario.
+> _Ref: [Paradigma §7 Medición del Agotamiento](../../convenions/planning_and_design/index.md#7-medición-del-agotamiento-y-bienestar)_
+
+### Evaluación Cognitiva del Usuario (Maslach Burnout Inventory)
+
+| Dimensión                         | Impacto esperado | Cómo esta feature lo logra                                                     |
+| --------------------------------- | ---------------- | ------------------------------------------------------------------------------ |
+| **Agotamiento emocional**         | **Reduce**       | Inbox tipo Stack elimina la sobrecarga de ver muchas opciones                  |
+| **Despersonalización**            | **Reduce**       | Feedback personalizado ("+X% a Enfoque Lúcido") conecta al usuario con su meta |
+| **Falta de realización personal** | **Reduce**       | Dashboard del 1% muestra progreso acumulado visible y gamificado               |
+
+### Atomicidad (Pomodoro 25 min)
+
+- [x] Las acciones principales son completables en ≤ 25 min (atomización forzada)
+- [x] No requiere sesiones de configuración largas (tags se asignan inline)
+- [x] El feedback de progreso es inmediato (notificación post-pomodoro)
+
+---
+
+## 7. Principios de Diseño para TDAH
 
 > Principios que deben respetarse en **toda decisión de diseño** de esta feature.
 
@@ -449,7 +506,7 @@ const handleNotificationClick = (action: InboxAction) => {
 
 ---
 
-## 7. Notas y Evolución
+## 8. Notas y Evolución
 
 | Fecha      | Nota                                                                                    |
 | ---------- | --------------------------------------------------------------------------------------- |

@@ -11,6 +11,7 @@
 2. **Nombrar** el archivo: `feature_[nombre-en-kebab-case].md`
 3. **Completar** progresivamente: no es necesario llenar todo de una vez. Las secciones pueden estar en estado `Pendiente`.
 4. **Iterar**: el documento evoluciona con el feature, desde Draft hasta Approved.
+5. **Vincular Lean Canvas**: si esta feature tiene impacto en el negocio, referenciar su conexión con el [Lean Canvas](../../business_model_canvas/lean_canvas.md) principal en la Capa 1.
 
 ---
 
@@ -22,6 +23,7 @@
 | **Estado**               | `Draft` / `In-Review` / `Approved` / `Tech-Debt`                |
 | **Owner**                | `[Nombre]` (TPM / TPE)                                          |
 | **Dominio (DDD)**        | `[Contexto Delimitado, e.g.: Gestión de Tiempo, IA Journaling]` |
+| **Módulo (Bounded Ctx)** | `[Módulo al que pertenece esta feature, según DDD]`             |
 | **Fecha de creación**    | `YYYY-MM-DD`                                                    |
 | **Última actualización** | `YYYY-MM-DD`                                                    |
 | **Sprint / Ciclo**       | `[Referencia al sprint o ciclo de trabajo]`                     |
@@ -31,6 +33,7 @@
 ## 1. Capa de Descubrimiento (Contexto de Negocio) — TPM
 
 > **Propósito:** Alineación con el Lean Canvas y el valor para el usuario.
+> _Ref: [Paradigma §2 Capa A](./index.md#capa-a-descubrimiento--enfoque-en-el-problema-tpm) + [§9 Features como Mini-Productos](./index.md#9-features-como-mini-productos-lean-canvas-por-feature)_
 
 ### User Story
 
@@ -46,7 +49,7 @@ para [beneficio o valor que obtiene].
 
 ### KPI / Métricas de Éxito
 
-<!-- ¿Cómo sabemos que esto funcionó? -->
+<!-- ¿Cómo sabemos que esto funcionó? Incluir métricas de bienestar si aplica (ver §7 del paradigma) -->
 
 | Métrica                               | Valor objetivo | Método de medición        |
 | ------------------------------------- | -------------- | ------------------------- |
@@ -56,11 +59,26 @@ para [beneficio o valor que obtiene].
 
 <!-- Insights de entrevistas, datos de uso, Lean Canvas, etc. -->
 
+### Mini Lean Canvas (Opcional)
+
+<!-- Si esta feature tiene suficiente complejidad de negocio, completar un mini Lean Canvas -->
+
+| Sección               | Descripción                                         |
+| --------------------- | --------------------------------------------------- |
+| **Problema**          | `[Top 3 dolores que esta feature resuelve]`         |
+| **Segmento**          | `[¿Quién se beneficia más de esta feature?]`        |
+| **UVP**               | `[Propuesta de valor única de esta feature]`        |
+| **Solución**          | `[Componentes clave]`                               |
+| **Métricas Clave**    | `[North Star Metric de esta feature]`               |
+| **Ventaja Injusta**   | `[¿Por qué es difícil de copiar?]`                  |
+| **Vínculo al Canvas** | `[Qué secciones del Lean Canvas principal impacta]` |
+
 ---
 
 ## 2. Capa de Definición (Requerimientos) — Bridge TPM ↔ TPE
 
 > **Propósito:** Reglas de negocio claras y límites del sistema.
+> _Ref: [Paradigma §2 Capa B](./index.md#capa-b-definición--enfoque-en-la-solución-bridge-tpm--tpe)_
 
 ### Requerimientos Funcionales (RF)
 
@@ -82,7 +100,8 @@ para [beneficio o valor que obtiene].
 
 ### Criterios de Aceptación
 
-<!-- Lista de condiciones que deben cumplirse para considerar esta feature como "completa" -->
+<!-- Lista de condiciones que deben cumplirse para considerar esta feature como "completa".
+     Estos criterios serán la base directa de los escenarios BDD en la Capa 3. -->
 
 - [ ] `[Criterio 1]`
 - [ ] `[Criterio 2]`
@@ -92,9 +111,13 @@ para [beneficio o valor que obtiene].
 
 ## 3. Capa de Especificación (BDD & Comportamiento) — TPE
 
-> **Propósito:** Convertir los requerimientos en escenarios testeables.
+> **Propósito:** Convertir los requerimientos en escenarios testeables. Los escenarios BDD facilitan la transición directa a TDD.
+> _Ref: [Paradigma §3 Metodologías de Especificación](./index.md#3-metodologías-de-especificación--bdd-vdm-y-featuremodule-structure)_
 
 ### Escenarios BDD (Gherkin)
+
+<!-- Pipeline: Criterios de Aceptación (Capa 2) → Escenarios BDD (Capa 3) → Tests automatizados (TDD)
+     Cubrir al menos: Happy Path, Error Case y Boundary Case -->
 
 ```gherkin
 Feature: [Título de la funcionalidad]
@@ -125,11 +148,21 @@ Feature: [Título de la funcionalidad]
                            └── No → [Paso 3b]
 ```
 
+### Especificación Formal (Opcional — VDM)
+
+<!-- Para componentes de alta criticidad, documentar pre/post condiciones formales.
+     Ver: Paradigma §3.2 Vienna Development Method -->
+
+| Operación       | Pre-condición              | Post-condición                 | Invariante         |
+| --------------- | -------------------------- | ------------------------------ | ------------------ |
+| `[Operación 1]` | `[Estado requerido antes]` | `[Estado garantizado después]` | `[Siempre verdad]` |
+
 ---
 
 ## 4. Capa de Ingeniería y Ciencias de la Computación — TPE
 
 > **Propósito:** Criterio técnico senior para evitar deuda técnica.
+> _Ref: [Paradigma §4 Criterio de Ingeniería](./index.md#4-criterio-de-ingeniería-de-software-y-ciencias-de-la-computación)_
 
 ### Arquitectura de Datos
 
@@ -158,7 +191,8 @@ Feature: [Título de la funcionalidad]
 
 ### R&D / Spikes
 
-<!-- Tareas de investigación necesarias antes de especificar -->
+<!-- Tareas de investigación necesarias antes de especificar.
+     Si hay incógnitas técnicas, NO escribir la especificación aún. Crear un Spike acotado (1-2 días). -->
 
 - [ ] `[Spike 1: e.g. ¿Soporta la API de terceros este volumen?]` — Duración estimada: `[1-2 días]`
 - [ ] `[Spike 2: e.g. ¿Qué librería es más adecuada para X?]` — Duración estimada: `[N días]`
@@ -168,6 +202,7 @@ Feature: [Título de la funcionalidad]
 ## 5. Gestión de Deuda e Incertidumbre
 
 > **Propósito:** Documentar lo que no sabemos hoy para que no se convierta en deuda técnica mañana.
+> _Ref: [Paradigma §5 Gestión de Incertidumbre](./index.md#5-gestión-de-incertidumbre-y-deuda-técnica)_
 
 ### Preguntas Abiertas (Incertidumbre)
 
@@ -202,7 +237,32 @@ Feature: [Título de la funcionalidad]
 
 ---
 
-## 6. Notas y Evolución
+## 6. Impacto en Bienestar y Sostenibilidad
+
+> **Propósito:** Evaluar el costo cognitivo de esta feature para el usuario y para el desarrollador.
+> _Ref: [Paradigma §7 Medición del Agotamiento](./index.md#7-medición-del-agotamiento-y-bienestar)_
+
+### Evaluación Cognitiva del Usuario
+
+<!-- ¿Esta feature reduce o aumenta la carga cognitiva del usuario? Basado en las 3 dimensiones del Maslach Burnout Inventory -->
+
+| Dimensión                         | Impacto esperado              | Mitigación                      |
+| --------------------------------- | ----------------------------- | ------------------------------- |
+| **Agotamiento emocional**         | `[Reduce / Neutro / Aumenta]` | `[e.g. UI simplificada]`        |
+| **Despersonalización**            | `[Reduce / Neutro / Aumenta]` | `[e.g. Feedback personalizado]` |
+| **Falta de realización personal** | `[Reduce / Neutro / Aumenta]` | `[e.g. Progreso visible]`       |
+
+### Atomicidad (Pomodoro 25 min)
+
+<!-- ¿Las interacciones del usuario con esta feature pueden completarse dentro de un intervalo atómico de 25 min? -->
+
+- [ ] Las acciones principales son completables en ≤ 25 min
+- [ ] No requiere sesiones de configuración largas
+- [ ] El feedback de progreso es inmediato
+
+---
+
+## 7. Notas y Evolución
 
 <!-- Espacio libre para notas de progreso, decisiones tomadas en revisiones, links a PRs, etc. -->
 

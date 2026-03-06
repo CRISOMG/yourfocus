@@ -1,6 +1,6 @@
 # Paradigma Integrado de Planificación y Diseño de Software
 
-> Un marco de trabajo para abordar el rol dual de **Technical Product Manager (TPM)** y **Technical Product Engineer (TPE)**, integrando principios de Agile, Lean, Scrum, Six Sigma y Domain-Driven Design.
+> Un marco de trabajo para abordar el rol dual de **Technical Product Manager (TPM)** y **Technical Product Engineer (TPE)**, integrando principios de Agile, Lean, Scrum, Six Sigma, Domain-Driven Design, BDD y metodologías formales.
 
 ---
 
@@ -10,13 +10,14 @@ Este paradigma propone una estructura de capas progresivas que conecta la **visi
 
 ### Pilares Fundamentales
 
-| Pilar                    | Rol en el paradigma     | Aporte clave                                                      |
-| ------------------------ | ----------------------- | ----------------------------------------------------------------- |
-| **Manifiesto Agile**     | Base filosófica         | Flexibilidad, adaptación al cambio, entrega iterativa de valor    |
-| **Lean**                 | Filosofía de eficiencia | Maximizar valor, eliminar desperdicio, optimización continua      |
-| **Scrum**                | Marco operativo         | Roles, eventos y artefactos concretos para gestionar complejidad  |
-| **Six Sigma**            | Calidad de proceso      | Reducir variabilidad, herramientas estadísticas, mejora continua  |
-| **Domain-Driven Design** | Lenguaje y arquitectura | Contextos delimitados, lenguaje ubicuo, alineación negocio-código |
+| Pilar                         | Rol en el paradigma           | Aporte clave                                                      |
+| ----------------------------- | ----------------------------- | ----------------------------------------------------------------- |
+| **Manifiesto Agile**          | Base filosófica               | Flexibilidad, adaptación al cambio, entrega iterativa de valor    |
+| **Lean**                      | Filosofía de eficiencia       | Maximizar valor, eliminar desperdicio, optimización continua      |
+| **Scrum**                     | Marco operativo               | Roles, eventos y artefactos concretos para gestionar complejidad  |
+| **Six Sigma**                 | Calidad de proceso            | Reducir variabilidad, herramientas estadísticas, mejora continua  |
+| **Domain-Driven Design**      | Lenguaje y arquitectura       | Contextos delimitados, lenguaje ubicuo, alineación negocio-código |
+| **Behavior-Driven Dev (BDD)** | Puente requerimientos → tests | Criterios de aceptación ejecutables con Gherkin                   |
 
 ---
 
@@ -33,6 +34,9 @@ El paradigma se estructura en capas secuenciales que van de lo abstracto a lo co
 - **KPIs de Éxito:** Métricas que validen si la solución funciona.
 
 **Artefacto de salida:** Lista de intenciones de alto nivel alineadas con el valor de negocio.
+
+> [!TIP]
+> Cada feature puede tratarse como un **"mini-producto"** con su propio Lean Canvas. Cuando hay múltiples Canvas, se crea un Canvas principal que actúa como vista general y vincula cada feature a su Canvas específico. Esto mantiene la coherencia estratégica (ver [Sección 9: Features como Mini-Productos](#9-features-como-mini-productos-lean-canvas-por-feature)).
 
 ---
 
@@ -59,13 +63,72 @@ El paradigma se estructura en capas secuenciales que van de lo abstracto a lo co
 
 - **BDD con Gherkin:** Escenarios `Given / When / Then` que convierten el requerimiento en algo _testeable_.
 - **Feature-Based Structure:** Documentación y código organizados por funcionalidad, no por capas técnicas.
+- **Module-Based Structure:** Agrupación de múltiples features en módulos coherentes, definidos por los **Bounded Contexts** de DDD.
 - **Decisiones de Arquitectura:** Selección de algoritmos, estructuras de datos y patrones.
 
 **Artefacto de salida:** Especificaciones BDD + documentación de decisiones técnicas.
 
 ---
 
-## 3. Criterio de Ingeniería de Software y Ciencias de la Computación
+## 3. Metodologías de Especificación — BDD, VDM y Feature/Module Structure
+
+### 3.1 Behavior-Driven Development (BDD)
+
+BDD se ubica en un **punto transversal** entre las capas B y C. Define los comportamientos esperados del sistema con ejemplos concretos que conectan requerimientos con especificaciones.
+
+**Formato Given / When / Then:**
+
+```gherkin
+Feature: [Título de la funcionalidad]
+
+  Scenario: [Caso de éxito]
+    Given [Contexto inicial — estado del sistema]
+    When [Acción del usuario — evento disparador]
+    Then [Resultado esperado — comportamiento verificable]
+```
+
+> [!NOTE]
+> BDD facilita la **transición a Test-Driven Development (TDD)** al establecer criterios de aceptación claros y ejecutables desde el principio. Las pruebas se escriben basándose en el comportamiento definido, asegurando congruencia entre requerimientos e implementación.
+
+**Pipeline BDD → TDD:**
+
+```
+Historias de Usuario (Capa A)
+        ↓
+Criterios de Aceptación (Capa B)
+        ↓
+Escenarios BDD / Gherkin (Capa B↔C)
+        ↓
+Tests automatizados / TDD (Implementación)
+```
+
+### 3.2 Vienna Development Method (VDM)
+
+VDM es una **metodología formal** con alto nivel de abstracción, basada en matemáticas y especificaciones precisas. Se sitúa a un nivel más cercano a la especificación formal que BDD:
+
+| Aspecto         | BDD                                     | VDM                                     |
+| --------------- | --------------------------------------- | --------------------------------------- |
+| **Enfoque**     | Comportamiento y colaboración           | Especificación formal y matemática      |
+| **Lenguaje**    | Gherkin (lenguaje natural estructurado) | Notación formal (pre/post condiciones)  |
+| **Para qué**    | Validar con stakeholders                | Partes críticas que requieren precisión |
+| **Cuándo usar** | Mayoría de las features                 | Componentes de alta criticidad          |
+
+**Integración recomendada:** Usar BDD para la mayoría de los comportamientos y reservar VDM para la especificación detallada de las partes más críticas del sistema.
+
+### 3.3 Feature-Based vs. Module-Based Structure
+
+| Nivel             | Granularidad      | Determinado por           | Ejemplo                              |
+| ----------------- | ----------------- | ------------------------- | ------------------------------------ |
+| **Feature-Based** | Una funcionalidad | Un criterio de aceptación | "Tag-Based OKRs", "AI Atomizer"      |
+| **Module-Based**  | Grupo de features | Bounded Context (DDD)     | "Gestión de Tiempo", "IA Journaling" |
+
+- Un **Feature** es la unidad de documentación: un archivo Markdown por feature.
+- Un **Módulo** agrupa features que comparten el mismo dominio/bounded context.
+- Lo que determina los límites de un módulo son los **bounded contexts** de DDD: áreas con lenguaje y objetivos distintos.
+
+---
+
+## 4. Criterio de Ingeniería de Software y Ciencias de la Computación
 
 La aplicación de criterios técnicos avanzados ocurre **de forma progresiva** a través de las capas:
 
@@ -81,7 +144,7 @@ La aplicación de criterios técnicos avanzados ocurre **de forma progresiva** a
 
 ---
 
-## 4. Gestión de Incertidumbre y Deuda Técnica
+## 5. Gestión de Incertidumbre y Deuda Técnica
 
 Durante la etapa de diseño y planificación existen preguntas que **solo se responden al tener detalles de implementación**. Para que esta información no se pierda:
 
@@ -109,17 +172,45 @@ Para clasificar y priorizar contingencias:
 
 ---
 
-## 5. DDD como Paraguas Organizacional
+## 6. DDD como Paraguas Organizacional
 
 **Domain-Driven Design** no se aplica solo al código, sino como lenguaje común para todo el paradigma:
 
-- **Bounded Contexts (Contextos Delimitados):** Cada módulo responde a un subdominio específico del negocio.
+- **Bounded Contexts (Contextos Delimitados):** Cada módulo responde a un subdominio específico del negocio. Se identifican observando los límites naturales del negocio: áreas con lenguaje y objetivos distintos.
 - **Lenguaje Ubicuo:** Antes de escribir una historia de usuario, se define en qué "dominio" estamos (e.g., Gestión de Tiempo vs. IA Journaling).
 - **Separación clara:** Evita que requerimientos se mezclen y generen dependencias caóticas.
+- **Module Structure:** Los bounded contexts son los que determinan qué features se agrupan en un módulo.
 
 ---
 
-## 6. Relación entre Metodologías
+## 7. Medición del Agotamiento y Bienestar
+
+El paradigma no solo mide productividad, sino también el **costo cognitivo** del trabajo. Basándose en el **Maslach Burnout Inventory (MBI)**, se consideran tres dimensiones de agotamiento:
+
+| Dimensión                         | Cualificación                                            | Cuantificación                                     |
+| --------------------------------- | -------------------------------------------------------- | -------------------------------------------------- |
+| **Agotamiento emocional**         | Sensación de estar exhausto, sin energía para el trabajo | Escala de frecuencia (nunca → siempre)             |
+| **Despersonalización**            | Actitud distante o cínica hacia el trabajo o los demás   | Preguntas sobre percepción de distanciamiento      |
+| **Falta de realización personal** | Sensación de ineficacia, que el trabajo no tiene sentido | Preguntas sobre logro y satisfacción con las metas |
+
+> [!IMPORTANT]
+> En sistemas basados en OKRs y Pomodoros, estas dimensiones se pueden medir con:
+>
+> - Encuestas periódicas integradas (check-ins post-pomodoro).
+> - Monitoreo de cambios en rendimiento (pomodoros completados vs. interrumpidos).
+> - Señales de alerta: retrasos constantes con metas clave, disminución de productividad.
+
+### Pomodoro de 25 minutos como Unidad Atómica
+
+Los 25 minutos son un periodo óptimo para mantener concentración intensa sin llegar al agotamiento. Estos "sprints" de trabajo, seguidos de descansos breves, ayudan a:
+
+- Gestionar mejor el tiempo.
+- Prevenir la procrastinación.
+- Establecer una unidad medible de esfuerzo.
+
+---
+
+## 8. Relación entre Metodologías
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -141,13 +232,53 @@ Para clasificar y priorizar contingencias:
 │                    │  Lenguaje común,     │                  │
 │                    │  Contextos           │                  │
 │                    │  delimitados         │                  │
-│                    └──────────────────────┘                  │
+│                    └───────────┬──────────┘                  │
+│                                │                             │
+│              ┌─────────────────┼─────────────────┐           │
+│              │                 │                 │           │
+│    ┌─────────▼───────┐ ┌──────▼────────┐ ┌──────▼─────────┐ │
+│    │  BDD (Gherkin)  │ │ Feature-Based │ │ Module-Based   │ │
+│    │  Given/When/    │ │ Structure     │ │ Structure      │ │
+│    │  Then → TDD     │ │ (1 feature =  │ │ (Bounded       │ │
+│    │                 │ │  1 doc)       │ │  Contexts)     │ │
+│    └─────────────────┘ └──────────────┘  └────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 7. Diferencias Clave entre Lean y Scrum
+## 9. Features como Mini-Productos (Lean Canvas por Feature)
+
+Cada feature puede abordarse como un **"mini-producto"** y gestionarse con principios de gerencia de productos:
+
+- Se puede definir un **Lean Canvas por feature** que destile: propuesta de valor, segmentos, métricas, estructura de costos y fuentes de ingreso específicas de esa funcionalidad.
+- Cuando existen múltiples Lean Canvas, se alinean con un **Canvas principal** que actúa como vista general del producto.
+
+### Estructura de Integración
+
+```
+Canvas Principal (Producto)
+├── Canvas Feature A (e.g., Tag-Based OKRs)
+├── Canvas Feature B (e.g., AI Atomizer)
+├── Canvas Feature C (e.g., Zettelkasten Notes)
+└── ... cada uno con las 9 secciones del Lean Canvas
+```
+
+### Las 9 Secciones del Lean Canvas
+
+1. **Problema** — Dolores top 3 del usuario
+2. **Segmento de Clientes** — Early adopters y perfiles
+3. **Propuesta de Valor Única** — Diferenciador clave
+4. **Solución** — Features que resuelven el problema
+5. **Canales** — Cómo llega al usuario
+6. **Flujos de Ingresos** — Modelo de monetización
+7. **Estructura de Costos** — COGS y costos fijos
+8. **Métricas Clave** — North Star Metric + KPIs
+9. **Ventaja Injusta** — Barrera de entrada
+
+---
+
+## 10. Diferencias Clave entre Lean y Scrum
 
 Ambos coexisten bajo el paraguas Agile, pero tienen enfoques distintos:
 
@@ -161,19 +292,24 @@ Ambos coexisten bajo el paraguas Agile, pero tienen enfoques distintos:
 
 ---
 
-## 8. Resumen: El Paradigma Completo
+## 11. Resumen: El Paradigma Completo
 
 ```
 Descubrimiento (TPM)     →  "¿Qué problema resolvemos?"
-        ↓
+        ↓                      Lean Canvas, User Stories
 Definición (Bridge)       →  "¿Qué reglas y restricciones tiene?"
-        ↓
+        ↓                      RF, RNF, Criterios de Aceptación
 Especificación (TPE)      →  "¿Cómo lo implementamos con calidad?"
-        ↓
+        ↓                      BDD/Gherkin → TDD, Feature/Module Structure
+Ingeniería y CS           →  "¿Qué algoritmos y trade-offs?"
+        ↓                      Complejidad, Spikes, Decisiones técnicas
 Gestión de Incertidumbre  →  "¿Qué no sabemos aún?"
+        ↓                      Assumptions Log, Matriz de Riesgos
+Bienestar y Sostenibilidad → "¿Cuál es el costo cognitivo?"
+                               Maslach Burnout Inventory, Pomodoro 25min
 ```
 
-Este flujo, soportado por **DDD** como lenguaje común y las metodologías **Agile + Lean + Scrum + Six Sigma** como motor operativo, permite construir software con trazabilidad completa desde la idea hasta el código.
+Este flujo, soportado por **DDD** como lenguaje común y las metodologías **Agile + Lean + Scrum + Six Sigma** como motor operativo, permite construir software con trazabilidad completa desde la idea hasta el código, cuidando tanto la calidad técnica como el bienestar del profesional.
 
 ---
 
@@ -184,3 +320,6 @@ Este flujo, soportado por **DDD** como lenguaje común y las metodologías **Agi
 - [Lean Software Development — Mary & Tom Poppendieck](https://www.poppendieck.com/)
 - [Six Sigma en Ingeniería de Software](https://www.isixsigma.com/)
 - [Behavior Driven Development (BDD)](https://cucumber.io/docs/bdd/)
+- [Vienna Development Method (VDM)](https://www.overturetool.org/)
+- [Maslach Burnout Inventory (MBI)](https://www.mindgarden.com/117-maslach-burnout-inventory-mbi)
+- [Lean Canvas — Ash Maurya](https://leanstack.com/lean-canvas)
