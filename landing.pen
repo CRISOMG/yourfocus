@@ -1,0 +1,2551 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Ipr22",
+      "x": 900,
+      "y": 0,
+      "name": "Yourfocus Landing",
+      "clip": true,
+      "width": 1440,
+      "fill": "$bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "oIwOa",
+          "name": "Nav",
+          "width": "fill_container",
+          "fill": "#0D222DD9",
+          "padding": [
+            16,
+            40
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "xhncV",
+              "name": "logoWrap",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "1PH5Z",
+                  "name": "logoIcon",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "$orange",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "id": "dJOeO",
+                  "name": "logoText",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$orange",
+                        "position": 0
+                      },
+                      {
+                        "color": "$cream",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "content": "Yourfocus",
+                  "fontFamily": "Fredoka",
+                  "fontSize": 22,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "0ua6w",
+              "name": "navLinks",
+              "gap": 24,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "3lg6o",
+                  "name": "linkWhy",
+                  "fill": "$text-muted",
+                  "content": "Por qué",
+                  "fontFamily": "Lexend",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "pbI4U",
+                  "name": "linkHow",
+                  "fill": "$text-muted",
+                  "content": "Cómo",
+                  "fontFamily": "Lexend",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "N2owf",
+                  "name": "linkEco",
+                  "fill": "$text-muted",
+                  "content": "Ecosistema",
+                  "fontFamily": "Lexend",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Clhwt",
+                  "name": "linkPrice",
+                  "fill": "$text-muted",
+                  "content": "Precio",
+                  "fontFamily": "Lexend",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "zlCBD",
+                  "name": "localBtn",
+                  "fill": "$surface-glass",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sLS5W",
+                      "name": "localText",
+                      "fill": "$text-muted",
+                      "content": "EN",
+                      "fontFamily": "Lexend",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "hFpH0",
+          "name": "Beta Banner",
+          "width": "fill_container",
+          "fill": "#1A4D2E",
+          "gap": 12,
+          "padding": [
+            10,
+            20
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "W4fxZ",
+              "name": "badgeWrap",
+              "fill": "#22C55E26",
+              "cornerRadius": 100,
+              "gap": 6,
+              "padding": [
+                4,
+                10
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "iqpEm",
+                  "name": "dot",
+                  "fill": "#22C55E",
+                  "width": 8,
+                  "height": 8
+                },
+                {
+                  "type": "text",
+                  "id": "9dEUX",
+                  "name": "badgeText",
+                  "fill": "#22C55E",
+                  "content": "IN DEVELOPMENT",
+                  "fontFamily": "Lexend",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "CLLwY",
+              "name": "betaLink",
+              "fill": "$cream",
+              "content": "Open Beta!",
+              "fontFamily": "Lexend",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AMRQM",
+          "name": "Hero Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            80,
+            120
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "0I2U1",
+              "name": "Hero Image",
+              "clip": true,
+              "width": 600,
+              "height": 340,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "./images/generated-1772767506041.png",
+                "mode": "fill"
+              },
+              "cornerRadius": 16,
+              "stroke": {
+                "thickness": 2,
+                "fill": "$border"
+              }
+            },
+            {
+              "type": "frame",
+              "id": "hnZaB",
+              "name": "heroBadge",
+              "fill": "$orange-tint",
+              "cornerRadius": 100,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#CB874748"
+              },
+              "padding": [
+                6,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "CVa9H",
+                  "name": "heroBadgeText",
+                  "fill": "$orange",
+                  "content": "Productividad con Inteligencia Artificial",
+                  "fontFamily": "Lexend",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "IiJPj",
+              "name": "heroHeadline",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 135,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "$cream",
+                    "position": 0
+                  },
+                  {
+                    "color": "$orange",
+                    "position": 1
+                  }
+                ]
+              },
+              "textGrowth": "fixed-width",
+              "width": 720,
+              "content": "Tu enfoque, potenciado por IA",
+              "textAlign": "center",
+              "fontFamily": "Fredoka",
+              "fontSize": 52,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "XCmpl",
+              "name": "heroSub",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": 560,
+              "content": "Yourfocus combina el método Pomodoro con inteligencia artificial para que trabajes con más claridad, menos fricción y un propósito real.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "qVr7H",
+              "name": "Hero Form",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "S7Oj5",
+                  "name": "heroInput",
+                  "width": 300,
+                  "height": 48,
+                  "fill": "$surface-glass",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LSs4a",
+                      "name": "heroPlaceholder",
+                      "fill": "$text-muted",
+                      "content": "tu@email.com",
+                      "fontFamily": "Lexend",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tdKOx",
+                  "name": "heroCta",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$orange",
+                        "position": 0
+                      },
+                      {
+                        "color": "#FF8C00",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 12,
+                  "padding": [
+                    14,
+                    28
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "0RCj9",
+                      "name": "heroCtaText",
+                      "fill": "$white",
+                      "content": "Empezar gratis",
+                      "fontFamily": "Lexend",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "1cxM9",
+          "name": "Why Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            96,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "t23bT",
+              "name": "whyLabel",
+              "fill": "$orange",
+              "content": "EL PROBLEMA",
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "mNni0",
+              "name": "whyTitle",
+              "fill": "$cream",
+              "content": "¿Por qué necesitas Yourfocus?",
+              "textAlign": "center",
+              "fontFamily": "Fredoka",
+              "fontSize": 38,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "Z33cv",
+              "name": "whySub",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": 560,
+              "content": "Dos realidades que drenan tu productividad — y cómo las resolvemos.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "6Q7r6",
+              "name": "Why Grid",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "P6Egn",
+                  "name": "Internal Reality",
+                  "width": "fill_container",
+                  "fill": "$surface-glass",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "imvv9",
+                      "name": "cardIntTitle",
+                      "fill": "$orange",
+                      "content": "Realidad Interna",
+                      "fontFamily": "Fredoka",
+                      "fontSize": 22,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "2kubd",
+                      "name": "cardIntDesc",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "La distracción constante, la fatiga de decisión y la falta de estructura crean un ciclo de improductividad difícil de romper.",
+                      "lineHeight": 1.6,
+                      "fontFamily": "Lexend",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "x5Gq0",
+                      "name": "flowInt",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vodfo",
+                          "name": "step1",
+                          "fill": "$surface-glass",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "$border"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "l74I6",
+                              "name": "step1t",
+                              "fill": "$cream",
+                              "content": "Distracción",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "76x7v",
+                          "name": "arr1",
+                          "fill": "$text-muted",
+                          "content": "→",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xkT1Y",
+                          "name": "step2",
+                          "fill": "$surface-glass",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "$border"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "f2uwF",
+                              "name": "step2t",
+                              "fill": "$cream",
+                              "content": "Fatiga",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "WJAnz",
+                          "name": "arr2",
+                          "fill": "$text-muted",
+                          "content": "→",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "2aMAe",
+                          "name": "step3",
+                          "fill": "$surface-glass",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "$border"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "K1nEM",
+                              "name": "step3t",
+                              "fill": "$cream",
+                              "content": "Sin estructura",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "V2wYS",
+                          "name": "arr3",
+                          "fill": "$text-muted",
+                          "content": "→",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xq1hi",
+                          "name": "step4",
+                          "fill": "$orange-tint",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#CB874748"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "nk3Hp",
+                              "name": "step4t",
+                              "fill": "$orange",
+                              "content": "Burnout",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LsJvd",
+                  "name": "External Reality",
+                  "width": "fill_container",
+                  "fill": "$surface-glass",
+                  "cornerRadius": 20,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UYo1d",
+                      "name": "cardExtTitle",
+                      "fill": "$green",
+                      "content": "Realidad Externa",
+                      "fontFamily": "Fredoka",
+                      "fontSize": 22,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "R7OYs",
+                      "name": "cardExtDesc",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Herramientas fragmentadas, sin contexto compartido y sin visibilidad del esfuerzo real generan caos operativo.",
+                      "lineHeight": 1.6,
+                      "fontFamily": "Lexend",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WooPU",
+                      "name": "flowExt",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "NtSTR",
+                          "name": "es1",
+                          "fill": "$surface-glass",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "$border"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "rN8HY",
+                              "name": "es1t",
+                              "fill": "$cream",
+                              "content": "Herramientas rotas",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "b0NxX",
+                          "name": "ea1",
+                          "fill": "$text-muted",
+                          "content": "→",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zASmj",
+                          "name": "es2",
+                          "fill": "$surface-glass",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "$border"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "g3prf",
+                              "name": "es2t",
+                              "fill": "$cream",
+                              "content": "Sin visibilidad",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "g9qV9",
+                          "name": "ea2",
+                          "fill": "$text-muted",
+                          "content": "→",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "hghWo",
+                          "name": "es3",
+                          "fill": "$green-tint",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#6DB75848"
+                          },
+                          "padding": [
+                            6,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "nln9m",
+                              "name": "es3t",
+                              "fill": "$green",
+                              "content": "Yourfocus",
+                              "fontFamily": "Lexend",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ctfMf",
+          "name": "How Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            96,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "vFSPA",
+              "name": "howLabel",
+              "fill": "$orange",
+              "content": "LA SOLUCIÓN",
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "vEpAc",
+              "name": "howTitle",
+              "fill": "$cream",
+              "content": "¿Cómo funciona Yourfocus?",
+              "textAlign": "center",
+              "fontFamily": "Fredoka",
+              "fontSize": 38,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "wDNjN",
+              "name": "howSub",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": 560,
+              "content": "Empezamos por el porqué — no por las features.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "e15lD",
+              "name": "Golden Circle Wrapper",
+              "width": "fill_container",
+              "gap": 48,
+              "padding": [
+                40,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "uXuwu",
+                  "name": "Golden Circle Visual",
+                  "width": 260,
+                  "height": 260,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "hwDSr",
+                      "x": 0,
+                      "y": 0,
+                      "name": "ringWhat",
+                      "fill": "#17490915",
+                      "width": 260,
+                      "height": 260,
+                      "stroke": {
+                        "thickness": 1.5,
+                        "fill": "#17490966"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "5lZmB",
+                      "x": 100,
+                      "y": 200,
+                      "name": "ringWhatLabel",
+                      "fill": "$text-muted",
+                      "content": "QUÉ",
+                      "fontFamily": "Lexend",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "TNJss",
+                      "x": 45,
+                      "y": 45,
+                      "name": "ringHow",
+                      "fill": "#602D1F33",
+                      "width": 170,
+                      "height": 170,
+                      "stroke": {
+                        "thickness": 1.5,
+                        "fill": "#602D1F80"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "grTq8",
+                      "x": 95,
+                      "y": 150,
+                      "name": "ringHowLabel",
+                      "fill": "$text-muted",
+                      "content": "CÓMO",
+                      "fontFamily": "Lexend",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "oqDPG",
+                      "x": 90,
+                      "y": 90,
+                      "name": "ringWhy",
+                      "fill": "#DB6C0340",
+                      "width": 80,
+                      "height": 80,
+                      "stroke": {
+                        "thickness": 1.5,
+                        "fill": "#DB6C0399"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "cfwPG",
+                      "x": 104,
+                      "y": 122,
+                      "name": "ringWhyLabel",
+                      "fill": "$orange",
+                      "content": "POR QUÉ",
+                      "fontFamily": "Lexend",
+                      "fontSize": 9,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "8YEZx",
+                  "name": "Golden Details",
+                  "width": 380,
+                  "layout": "vertical",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "02vxG",
+                      "name": "gcWhy",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Twt5k",
+                          "name": "gcWhyLabel",
+                          "fill": "$orange",
+                          "content": "POR QUÉ",
+                          "fontFamily": "Lexend",
+                          "fontSize": 20,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "mGeoe",
+                          "name": "gcWhyTitle",
+                          "fill": "$cream",
+                          "content": "Creemos que el enfoque es un superpoder",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "1H4MB",
+                          "name": "gcWhyDesc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Cada persona merece herramientas que respeten su atención y amplifiquen su intención.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZLwQh",
+                      "name": "gcHow",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ctJxr",
+                          "name": "gcHowLabel",
+                          "fill": "$brown",
+                          "content": "CÓMO",
+                          "fontFamily": "Lexend",
+                          "fontSize": 20,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "zUd4y",
+                          "name": "gcHowTitle",
+                          "fill": "$cream",
+                          "content": "Combinando ciencia del tiempo con IA contextual",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "NXXQZ",
+                          "name": "gcHowDesc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Pomodoro adaptativo + un agente que aprende de tu ritmo y te ayuda a decidir.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "CeSxD",
+                      "name": "gcWhat",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "0LPpo",
+                          "name": "gcWhatLabel",
+                          "fill": "$green",
+                          "content": "QUÉ",
+                          "fontFamily": "Lexend",
+                          "fontSize": 20,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "mc54C",
+                          "name": "gcWhatTitle",
+                          "fill": "$cream",
+                          "content": "Una app de productividad con IA integrada",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Gfbb8",
+                          "name": "gcWhatDesc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Timer, tareas, bitácoras de voz, analytics y un segundo cerebro — todo conectado.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "3sSna",
+              "name": "MVV Strip",
+              "width": "fill_container",
+              "gap": 16,
+              "padding": [
+                40,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "v7PpI",
+                  "name": "mvvMission",
+                  "width": "fill_container",
+                  "fill": "$surface-glass",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HvOgv",
+                      "name": "mvvMLabel",
+                      "fill": "$orange",
+                      "content": "MISIÓN",
+                      "textAlign": "center",
+                      "fontFamily": "Lexend",
+                      "fontSize": 11,
+                      "fontWeight": "600",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "0WvHF",
+                      "name": "mvvMText",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Empoderar a cada persona para que trabaje con intención, claridad y propósito.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Lexend",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "plp2P",
+                  "name": "mvvVision",
+                  "width": "fill_container",
+                  "fill": "$surface-glass",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ID8ys",
+                      "name": "mvvVLabel",
+                      "fill": "$orange",
+                      "content": "VISIÓN",
+                      "textAlign": "center",
+                      "fontFamily": "Lexend",
+                      "fontSize": 11,
+                      "fontWeight": "600",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "oSsEJ",
+                      "name": "mvvVText",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Un mundo donde la tecnología amplifica el enfoque humano, no lo destruye.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Lexend",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tcm14",
+                  "name": "mvvValues",
+                  "width": "fill_container",
+                  "fill": "$surface-glass",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GRd46",
+                      "name": "mvvValLabel",
+                      "fill": "$orange",
+                      "content": "VALORES",
+                      "textAlign": "center",
+                      "fontFamily": "Lexend",
+                      "fontSize": 11,
+                      "fontWeight": "600",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "EtDLZ",
+                      "name": "mvvValText",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Transparencia, enfoque radical, mejora continua y respeto por el tiempo.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Lexend",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "axf3A",
+          "name": "Ecosystem Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            96,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "FhBxB",
+              "name": "ecoLabel",
+              "fill": "$orange",
+              "content": "ECOSISTEMA",
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "2s4bG",
+              "name": "ecoTitle",
+              "fill": "$cream",
+              "content": "Todo lo que necesitas, conectado",
+              "textAlign": "center",
+              "fontFamily": "Fredoka",
+              "fontSize": 38,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "RAneI",
+              "name": "ecoSub",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": 560,
+              "content": "Un ecosistema completo de productividad potenciado por inteligencia artificial.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "j6pnJ",
+              "name": "Eco Grid",
+              "width": "fill_container",
+              "gap": 16,
+              "padding": [
+                24,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ILCV5",
+                  "name": "ecoRow1",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "G0Fiu",
+                      "name": "c1",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "WytX5",
+                          "name": "c1icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#DB6C0333",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#DB6C0333"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "aBWf6",
+                          "name": "c1title",
+                          "fill": "$cream",
+                          "content": "Pomodoro",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "GdIRV",
+                          "name": "c1desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Timer adaptativo con ciclos, descansos y tracking automático.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "1802I",
+                      "name": "c2",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "axOEd",
+                          "name": "c2icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#1749094D",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#1749094D"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "IguPi",
+                          "name": "c2title",
+                          "fill": "$cream",
+                          "content": "Bitácora",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Hy9YJ",
+                          "name": "c2desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Notas de voz transcritas con IA al final de cada pomodoro.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "F33Cr",
+                  "name": "ecoRow2",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "J9jjR",
+                      "name": "c3",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ChV6E",
+                          "name": "c3icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#602D1F4D",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#602D1F4D"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "LYI5h",
+                          "name": "c3title",
+                          "fill": "$cream",
+                          "content": "Agente IA",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ouDvu",
+                          "name": "c3desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Un segundo cerebro que te ayuda a reflexionar y tomar decisiones.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rf3rh",
+                      "name": "c4",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "glprY",
+                          "name": "c4icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#F7EFC526",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#F7EFC526"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "i1zeL",
+                          "name": "c4title",
+                          "fill": "$cream",
+                          "content": "Conocimiento",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aGcX2",
+                          "name": "c4desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Base de conocimiento personal construida desde tus sesiones.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "PV63w",
+                  "name": "ecoRow3",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gM10x",
+                      "name": "c5",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "VECYZ",
+                          "name": "c5icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#DB6C031A",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#DB6C031A"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "BOYlz",
+                          "name": "c5title",
+                          "fill": "$cream",
+                          "content": "Analytics",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RAeIC",
+                          "name": "c5desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Métricas de enfoque, tendencias y patrones de productividad.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YfC6X",
+                      "name": "c6",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "u2til",
+                          "name": "c6icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#17490933",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#17490933"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "Mag4B",
+                          "name": "c6title",
+                          "fill": "$cream",
+                          "content": "API",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "j1g5T",
+                          "name": "c6desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Integra Yourfocus con tus herramientas favoritas vía REST API.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "3OJv4",
+                  "name": "ecoRow4",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cRPdF",
+                      "name": "c7",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "J3Nvg",
+                          "name": "c7icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#DB6C0326",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#DB6C0326"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "pwZK2",
+                          "name": "c7title",
+                          "fill": "$cream",
+                          "content": "BYOK",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "UWa34",
+                          "name": "c7desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Trae tu propia API key de IA. Tú controlas tu gasto.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U393Z",
+                      "name": "c8",
+                      "width": "fill_container",
+                      "fill": "$surface-glass",
+                      "cornerRadius": 20,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bCAey",
+                          "name": "c8icon",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#602D1F33",
+                          "cornerRadius": 12,
+                          "stroke": {
+                            "thickness": 1,
+                            "fill": "#602D1F33"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "tZDQz",
+                          "name": "c8title",
+                          "fill": "$cream",
+                          "content": "Tareas",
+                          "textAlign": "center",
+                          "fontFamily": "Fredoka",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DAzAv",
+                          "name": "c8desc",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Kanban integrado con vinculación automática a pomodoros.",
+                          "lineHeight": 1.5,
+                          "textAlign": "center",
+                          "fontFamily": "Lexend",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "2pHyz",
+          "name": "Pricing Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            96,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "KE4Bf",
+              "name": "priceLabel",
+              "fill": "$orange",
+              "content": "PRECIO",
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "letterSpacing": 2
+            },
+            {
+              "type": "text",
+              "id": "UENIS",
+              "name": "priceTitle",
+              "fill": "$cream",
+              "content": "Simple y transparente",
+              "textAlign": "center",
+              "fontFamily": "Fredoka",
+              "fontSize": 38,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "V5ELi",
+              "name": "priceSub",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": 560,
+              "content": "Un solo plan con todo incluido. Sin sorpresas.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "8pZ2u",
+              "name": "Price Card",
+              "width": 480,
+              "fill": "$surface-glass",
+              "cornerRadius": 20,
+              "stroke": {
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wh2ka",
+                  "name": "priceBadge",
+                  "fill": "$orange-tint",
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "#CB874748"
+                  },
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wac9a",
+                      "name": "priceBadgeText",
+                      "fill": "$orange",
+                      "content": "Early Adopter",
+                      "fontFamily": "Lexend",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SqHK2",
+                  "name": "priceAmount",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "E7DJ6",
+                      "name": "priceCurrency",
+                      "fill": "$text-muted",
+                      "content": "$",
+                      "fontFamily": "Lexend",
+                      "fontSize": 24,
+                      "fontWeight": "300"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VGtk7",
+                      "name": "priceNumber",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 135,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$orange",
+                            "position": 0
+                          },
+                          {
+                            "color": "$cream",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "content": "4",
+                      "fontFamily": "Fredoka",
+                      "fontSize": 64,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JCHMM",
+                      "name": "pricePeriod",
+                      "fill": "$text-muted",
+                      "content": "USD /mes",
+                      "fontFamily": "Lexend",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "CSpwO",
+                  "name": "featureList",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VHGkH",
+                      "name": "f1",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3Ircm",
+                          "name": "f1check",
+                          "fill": "$green",
+                          "content": "✓",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "5KPG8",
+                          "name": "f1text",
+                          "fill": "$text-muted",
+                          "content": "Pomodoro con ciclos ilimitados",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vLORW",
+                      "name": "f2",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YXznk",
+                          "name": "f2check",
+                          "fill": "$green",
+                          "content": "✓",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "8KqTo",
+                          "name": "f2text",
+                          "fill": "$text-muted",
+                          "content": "Bitácoras de voz con IA",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FhjDn",
+                      "name": "f3",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gmCCB",
+                          "name": "f3check",
+                          "fill": "$green",
+                          "content": "✓",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "BZQLr",
+                          "name": "f3text",
+                          "fill": "$text-muted",
+                          "content": "Agente de segundo cerebro",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sIUsy",
+                      "name": "f4",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lDVhU",
+                          "name": "f4check",
+                          "fill": "$green",
+                          "content": "✓",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "zWQEo",
+                          "name": "f4text",
+                          "fill": "$text-muted",
+                          "content": "Kanban + tareas vinculadas",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w1VZl",
+                      "name": "f5",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "4epBN",
+                          "name": "f5check",
+                          "fill": "$green",
+                          "content": "✓",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "j11cQ",
+                          "name": "f5text",
+                          "fill": "$text-muted",
+                          "content": "Analytics y métricas de enfoque",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wJvGi",
+                      "name": "f6",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "psRLM",
+                          "name": "f6check",
+                          "fill": "$green",
+                          "content": "✓",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jXqsk",
+                          "name": "f6text",
+                          "fill": "$text-muted",
+                          "content": "API REST + BYOK",
+                          "fontFamily": "Lexend",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tJtWd",
+                  "name": "priceForm",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KpMnR",
+                      "name": "priceInput",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": "$surface-glass",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "1Vm33",
+                          "name": "priceInputText",
+                          "fill": "$text-muted",
+                          "content": "tu@email.com",
+                          "fontFamily": "Lexend",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ORA3z",
+                      "name": "priceBtn",
+                      "height": 48,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 135,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$orange",
+                            "position": 0
+                          },
+                          {
+                            "color": "#FF8C00",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": 12,
+                      "padding": [
+                        14,
+                        28
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FzMlN",
+                          "name": "priceBtnText",
+                          "fill": "$white",
+                          "content": "Suscribirme",
+                          "fontFamily": "Lexend",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Aj4VO",
+                  "name": "priceGuarantee",
+                  "fill": "$text-muted",
+                  "content": "Cancela cuando quieras. Sin permanencia.",
+                  "textAlign": "center",
+                  "fontFamily": "Lexend",
+                  "fontSize": 12,
+                  "fontWeight": "normal",
+                  "fontStyle": "italic"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wHLkq",
+          "name": "CTA Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            96,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "XNGwF",
+              "name": "ctaTitle",
+              "fill": "$cream",
+              "textGrowth": "fixed-width",
+              "width": 560,
+              "content": "¿Listo para enfocarte de verdad?",
+              "textAlign": "center",
+              "fontFamily": "Fredoka",
+              "fontSize": 36,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "W3H9I",
+              "name": "ctaSub",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": 460,
+              "content": "Empieza hoy y descubre lo que pasa cuando tu productividad tiene inteligencia.",
+              "lineHeight": 1.6,
+              "textAlign": "center",
+              "fontFamily": "Lexend",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "ynkrM",
+              "name": "ctaForm",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "0G0VA",
+                  "name": "ctaInput",
+                  "width": 300,
+                  "height": 48,
+                  "fill": "$surface-glass",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "PBSNc",
+                      "name": "ctaInputText",
+                      "fill": "$text-muted",
+                      "content": "tu@email.com",
+                      "fontFamily": "Lexend",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eFmaf",
+                  "name": "ctaBtn",
+                  "height": 48,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$orange",
+                        "position": 0
+                      },
+                      {
+                        "color": "#FF8C00",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 12,
+                  "padding": [
+                    14,
+                    28
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Tk51z",
+                      "name": "ctaBtnText",
+                      "fill": "$white",
+                      "content": "Empezar ahora",
+                      "fontFamily": "Lexend",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Aak6A",
+              "name": "ctaNote",
+              "fill": "$text-muted",
+              "content": "Sin tarjeta de crédito. Cancela cuando quieras.",
+              "fontFamily": "Lexend",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "SPcT8",
+          "name": "Footer",
+          "width": "fill_container",
+          "stroke": {
+            "thickness": {
+              "top": 1
+            },
+            "fill": "$border"
+          },
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            40,
+            120
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "c3IZU",
+              "name": "footerLogo",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 135,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "$orange",
+                    "position": 0
+                  },
+                  {
+                    "color": "$cream",
+                    "position": 1
+                  }
+                ]
+              },
+              "content": "Yourfocus",
+              "fontFamily": "Fredoka",
+              "fontSize": 22,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "wiBxw",
+              "name": "footerTagline",
+              "fill": "$text-muted",
+              "content": "Enfócate con inteligencia artificial",
+              "fontFamily": "Lexend",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "q267g",
+              "name": "footerSocial",
+              "gap": 16,
+              "padding": [
+                16,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "4nZ5r",
+                  "name": "linkedinIcon",
+                  "width": 32,
+                  "height": 32,
+                  "iconFontName": "linkedin",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-muted"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "aDWLm",
+                  "name": "githubIcon",
+                  "width": 32,
+                  "height": 32,
+                  "iconFontName": "github",
+                  "iconFontFamily": "lucide",
+                  "fill": "$text-muted"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "WyZec",
+              "name": "footerLegal",
+              "opacity": 0.6,
+              "fill": "$text-muted",
+              "content": "© 2026 Yourfocus. Todos los derechos reservados.",
+              "fontFamily": "Lexend",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "bg": {
+      "type": "color",
+      "value": "#0D222D"
+    },
+    "border": {
+      "type": "color",
+      "value": "#FFFFFF1F"
+    },
+    "brown": {
+      "type": "color",
+      "value": "#AB6552"
+    },
+    "brown-tint": {
+      "type": "color",
+      "value": "#AB655226"
+    },
+    "cream": {
+      "type": "color",
+      "value": "#F7EFC5"
+    },
+    "green": {
+      "type": "color",
+      "value": "#6DB758"
+    },
+    "green-tint": {
+      "type": "color",
+      "value": "#6DB75826"
+    },
+    "orange": {
+      "type": "color",
+      "value": "#CB8747"
+    },
+    "orange-light": {
+      "type": "color",
+      "value": "#FFAA5B"
+    },
+    "orange-tint": {
+      "type": "color",
+      "value": "#CB874726"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#0D222D0D"
+    },
+    "surface-glass": {
+      "type": "color",
+      "value": "#FFFFFF08"
+    },
+    "text-muted": {
+      "type": "color",
+      "value": "#F7EFC5A6"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#F7EFC5"
+    },
+    "white": {
+      "type": "color",
+      "value": "#FFFFFF"
+    }
+  },
+  "imports": {
+    "9": "pencil:shadcn.lib.pen"
+  }
+}

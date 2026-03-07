@@ -180,3 +180,15 @@ CREATE POLICY "Users can insert own secrets" ON "public"."user_secrets" FOR INSE
 CREATE POLICY "Users can update own secrets" ON "public"."user_secrets" FOR UPDATE TO "authenticated" USING (("user_id" = (select auth.uid())));
 CREATE POLICY "Users can delete own secrets" ON "public"."user_secrets" FOR DELETE TO "authenticated" USING (("user_id" = (select auth.uid())));
 -- #endregion
+
+-- #region Scheduled Notifications Policies
+ALTER TABLE "public"."notification_templates" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view notification_templates" ON "public"."notification_templates" FOR SELECT USING (true);
+
+ALTER TABLE "public"."scheduled_notifications" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own scheduled notifications" ON "public"."scheduled_notifications" FOR ALL TO "authenticated" USING (("user_id" = (select auth.uid()))) WITH CHECK (("user_id" = (select auth.uid())));
+
+-- inbox_actions
+ALTER TABLE "public"."inbox_actions" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own inbox actions" ON "public"."inbox_actions" FOR ALL TO "authenticated" USING (("user_id" = (select auth.uid()))) WITH CHECK (("user_id" = (select auth.uid())));
+-- #endregion

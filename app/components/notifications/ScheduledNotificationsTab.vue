@@ -55,6 +55,28 @@ const customSelectedDays = ref<string[]>([]);
 const customTitle = ref("");
 const customBody = ref("");
 
+// Action type for inbox integration
+const actionTypeOptions = [
+  {
+    label: "Solo notificar (sin acción)",
+    value: "NONE",
+    icon: "i-lucide-bell",
+  },
+  { label: "Crear tarea", value: "CREATE_TASK", icon: "i-lucide-list-todo" },
+  {
+    label: "Repasar una nota",
+    value: "REVIEW_NOTE",
+    icon: "i-lucide-book-open",
+  },
+  {
+    label: "Crear bitácora",
+    value: "CREATE_LOG",
+    icon: "i-lucide-notebook-pen",
+  },
+  // { label: "Atomizar tarea con IA", value: "AI_ATOMIZE", icon: "i-lucide-sparkles" },
+];
+const selectedActionType = ref("NONE");
+
 const daysOfWeekOptions = [
   { label: "Lunes", value: "MO" },
   { label: "Martes", value: "TU" },
@@ -136,6 +158,7 @@ async function handleCreate() {
           scheduled_at: scheduledAt.toISOString(),
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           status: "active",
+          action_type: selectedActionType.value,
         })
         .select()
         .single();
@@ -249,6 +272,7 @@ async function handleCreate() {
           scheduled_at: computedScheduledAt.toISOString(),
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           status: "active",
+          action_type: selectedActionType.value,
         })
         .select()
         .single();
@@ -266,6 +290,7 @@ async function handleCreate() {
       customBody.value = "";
       customTime.value = "09:00";
       customSelectedDays.value = [];
+      selectedActionType.value = "NONE";
 
       await fetchNotifications();
     } catch (err: any) {
@@ -349,6 +374,16 @@ async function handleDelete(id: string) {
               class="w-full"
             />
           </UFormField>
+
+          <UFormField label="Acción al notificar">
+            <USelectMenu
+              v-model="selectedActionType"
+              :items="actionTypeOptions"
+              value-key="value"
+              class="w-full"
+            />
+          </UFormField>
+
           <p class="text-xs text-neutral-500">
             Se agendará diariamente un recordatorio basado en la hora
             seleccionada usando las jornadas del sistema.
@@ -408,6 +443,17 @@ async function handleDelete(id: string) {
               v-model="customBody"
               placeholder="Mantente hidratado durante tu jornada..."
               autoresize
+            />
+          </UFormField>
+
+          <USeparator class="my-4" />
+
+          <UFormField label="Acción al notificar">
+            <USelectMenu
+              v-model="selectedActionType"
+              :items="actionTypeOptions"
+              value-key="value"
+              class="w-full"
             />
           </UFormField>
 
@@ -472,6 +518,20 @@ async function handleDelete(id: string) {
               <span class="flex items-center gap-1" v-if="notification.rrule">
                 <UIcon name="i-lucide-repeat" />
                 Diariamente
+              </span>
+              <span
+                v-if="
+                  notification.action_type &&
+                  notification.action_type !== 'NONE'
+                "
+                class="flex items-center gap-1"
+              >
+                <UIcon name="i-lucide-zap" />
+                {{
+                  actionTypeOptions.find(
+                    (o) => o.value === notification.action_type,
+                  )?.label || notification.action_type
+                }}
               </span>
             </div>
           </div>

@@ -48,6 +48,7 @@ const emit = defineEmits<{
   (e: "openPushNotifications"): void;
   (e: "openInstallApp"): void;
   (e: "openOfflineQueue"): void;
+  (e: "openInbox"): void;
 }>();
 
 const profileController = useProfileController();
@@ -166,6 +167,18 @@ const items = computed<DropdownMenuItem[][]>(() => {
         @click="isDark = !isDark"
         aria-label="Toggle color mode"
       />
+
+      <!-- Inbox Bell -->
+      <div class="relative flex items-center">
+        <UButton
+          icon="i-lucide-bell"
+          color="neutral"
+          variant="ghost"
+          @click="emit('openInbox')"
+          aria-label="Inbox"
+        />
+        <!-- TODO: Badge with pending count from Realtime subscription -->
+      </div>
 
       <div
         v-if="!isOnline || pendingOperations.length > 0"

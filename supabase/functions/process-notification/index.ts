@@ -62,7 +62,35 @@ Deno.serve(async (req) => {
       url: override.link || template.link || "/",
     };
 
-    // 3. Dispatch the push notification using the existing send-push logic
+    // 3. Create inbox_action if notification has an action_type
+    if (notification.action_type && notification.action_type !== "NONE") {
+      try {
+        const { data: inboxAction, error: inboxError } = await supabaseAdmin
+          .from("inbox_actions")
+          .insert({
+            user_id: notification.user_id,
+            source_notification_id: notification.id,
+            title: pushPayload.title,
+            description: pushPayload.body,
+            action_type: notification.action_type,
+            action_payload: override,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (inboxError) {
+          console.error("Error creating inbox_action:", inboxError);
+        } else if (inboxAction) {
+          // Deep link: when user clicks the push, open app with inbox modal focused on this action
+          pushPayload.url = `/?inbox=open&action_id=${inboxAction.id}`;
+        }
+      } catch (e) {
+        console.error("Error creating inbox_action:", e);
+      }
+    }
+
+    // 4. Dispatch the push notification using the existing send-push logic
     // We invoke the other edge function via HTTP to reuse code and VAPID keys
     try {
       const sendPushRes = await fetch(
@@ -83,13 +111,12 @@ Deno.serve(async (req) => {
 
       if (!sendPushRes.ok) {
         console.error("Failed to invoke send-push:", await sendPushRes.text());
-        // We might want to retry this later, but for now we'll just log it
       }
     } catch (e) {
       console.error("Error invoking send-push:", e);
     }
 
-    // 4. Calculate next occurrence if it's a recurring notification (RRULE)
+    // 5. Calculate next occurrence if it's a recurring notification (RRULE)
     let nextScheduledAt = null;
     let newStatus = "active";
 
@@ -116,7 +143,7 @@ Deno.serve(async (req) => {
       newStatus = "completed";
     }
 
-    // 5. Update the Database record
+    // 6. Update the Database record
     const { error: updateError } = await supabaseAdmin
       .from("scheduled_notifications")
       .update({

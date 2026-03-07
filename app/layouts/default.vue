@@ -10,6 +10,7 @@ const openNotesModal = ref(false);
 const openPushNotificationsModal = ref(false);
 const openInstallAppModal = ref(false);
 const openOfflineQueueModal = ref(false);
+const openInboxModal = ref(false);
 
 // Provide modal controls to child pages/components
 provideLayoutModals({
@@ -40,7 +41,33 @@ provideLayoutModals({
   openOfflineQueue: () => {
     openOfflineQueueModal.value = true;
   },
+  openInbox: () => {
+    openInboxModal.value = true;
+  },
 });
+
+// Deep link: open inbox from push notification click (?inbox=open&action_id=...)
+const route = useRoute();
+const router = useRouter();
+
+onMounted(() => {
+  if (route.query.inbox === "open") {
+    openInboxModal.value = true;
+    // Clean up query params to avoid re-triggering on navigation
+    router.replace({ query: { ...route.query, inbox: undefined, action_id: undefined } });
+  }
+});
+
+// Also watch for route changes (SPA navigation from SW)
+watch(
+  () => route.query.inbox,
+  (val) => {
+    if (val === "open") {
+      openInboxModal.value = true;
+      router.replace({ query: { ...route.query, inbox: undefined, action_id: undefined } });
+    }
+  },
+);
 </script>
 
 <template>
@@ -55,6 +82,7 @@ provideLayoutModals({
       @open-push-notifications="openPushNotificationsModal = true"
       @open-install-app="openInstallAppModal = true"
       @open-offline-queue="openOfflineQueueModal = true"
+      @open-inbox="openInboxModal = true"
     />
     <USeparator />
 
@@ -74,5 +102,6 @@ provideLayoutModals({
     <PushNotificationsModal v-model="openPushNotificationsModal" />
     <InstallAppModal v-model="openInstallAppModal" />
     <OfflineQueueModal v-model="openOfflineQueueModal" />
+    <InboxModal v-model="openInboxModal" />
   </UContainer>
 </template>

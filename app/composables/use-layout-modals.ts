@@ -11,6 +11,7 @@ export interface LayoutModals {
   openPushNotifications: () => void;
   openInstallApp: () => void;
   openOfflineQueue: () => void;
+  openInbox: () => void;
 }
 
 const LAYOUT_MODALS_KEY = "layout-modals" as const;
@@ -33,6 +34,7 @@ export function useLayoutModals(): LayoutModals {
       openPushNotifications: () => {},
       openInstallApp: () => {},
       openOfflineQueue: () => {},
+      openInbox: () => {},
     };
   }
   return modals;

@@ -109,12 +109,13 @@ El usuario experimenta un **triángulo de parálisis por análisis**:
 | ID    | Descripción                                                                                                                                                                                                       | Prioridad |
 | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
 | RF-01 | **OKRs Tag-Driven:** Los Key Results se miden automáticamente interceptando tags usadas en el día a día. Un Objective tiene múltiples Key Results; cada KR se alimenta de múltiples tags con pesos diferenciados. | Alta      |
-| RF-02 | **Inbox de Acciones (Anti-Parálisis):** Tabla tipo Pila (Stack) donde solo se muestra la acción de mayor prioridad. Los ítems no desaparecen hasta interacción: completar, delegar o posponer.                    | Alta      |
+| RF-02 | **Inbox de Acciones (Anti-Parálisis):** Tabla tipo Pila (Stack) donde solo se muestra la acción de mayor prioridad. Los ítems no desaparecen hasta interacción: completar, delegar o posponer. Las acciones completadas siguen visibles y pueden re-ejecutarse con confirmación del usuario. | Alta      |
 | RF-03 | **Atomización Forzada con IA:** Si una tarea supera 1 Pomodoro (25 min), el sistema bloquea e invoca a la IA para desglosarla en exactamente 3 subtareas de 25 min. Las subtareas heredan los tags del OKR padre. | Alta      |
-| RF-04 | **Notificaciones Persistentes con Deep Linking:** Cada notificación incluye un `action_payload` que permite abrir modales de acción directamente. Suscripción Realtime a `inbox_actions`.                         | Alta      |
+| RF-04 | **Notificaciones con Action Types opcionales:** Las `scheduled_notifications` incluyen un campo `action_type` configurable (`CREATE_TASK`, `REVIEW_NOTE`, `CREATE_LOG`, `AI_ATOMIZE`, `NONE`). Al dispararse, generan una `inbox_action` con el `action_type` heredado. Si es `NONE`, la notificación es solo informativa. | Alta      |
 | RF-05 | **Dashboard del 1% (Feedback Inmediato):** Al terminar un pomodoro, el sistema notifica el progreso del KR asociado (e.g., "+0.4% a Enfoque Lúcido"). Radar Chart con las 7 cualidades.                           | Media     |
 | RF-06 | **Fórmula de progreso KR:** `Progreso = Σ (Métrica_Base_tag × Peso_tag)`. Tags como `#deep-work` peso `2.0`, `#admin` peso `0.5`.                                                                                 | Alta      |
-| RF-07 | **Action Dispatcher:** Router que lee `action_type` del payload y monta el modal correspondiente (`TASK_TEMPLATE`, `AI_ATOMIZER`, `NOTE_REVIEW`).                                                                 | Alta      |
+| RF-07 | **Action Dispatcher:** Router que lee `action_type` del payload y monta el modal correspondiente (`TASK_TEMPLATE`, `AI_ATOMIZER`, `NOTE_REVIEW`, `CREATE_LOG`). Si `action_type` es `NONE`, no monta modal.         | Alta      |
+| RF-08 | **🔔 Inbox Bell en AppHeader:** Botón campana en el header junto al toggle de dark mode, con badge de conteo de acciones `pending`. Abre un modal/popover con la lista de `inbox_actions`, cada una clickeable para disparar su `action_type` asociado. | Alta      |
 
 ### Requerimientos No Funcionales (RNF)
 
@@ -135,7 +136,9 @@ El usuario experimenta un **triángulo de parálisis por análisis**:
 - [ ] Al crear una tarea > 25 min, se dispara el modal de Atomización IA y se generan 3 subtareas con tags heredados.
 - [ ] Al completar un pomodoro con tags asociados a un KR, se muestra notificación con % de avance.
 - [ ] Las `inbox_actions` persisten hasta interacción explícita del usuario.
-- [ ] El badge de campana refleja conteo real de acciones `pending` en tiempo real.
+- [ ] Al ejecutar una acción con `action_type`, se marca como `completed` pero permanece visible con opción de re-ejecutar (requiere confirmación).
+- [ ] El badge de campana 🔔 en el AppHeader refleja conteo real de acciones `pending` en tiempo real.
+- [ ] Las notificaciones programadas (`scheduled_notifications`) permiten configurar un `action_type` opcional.
 - [ ] Las subtareas generadas por IA comienzan con verbo de acción física (Escribir, Programar, Leer, Mover).
 
 ---
@@ -214,28 +217,41 @@ Feature: Atomización Forzada con IA
 ### Flujo de Interacción
 
 ```
-R-Rule dispara evento → Edge Function INSERT inbox_action
+Scheduled Notification se dispara (pg_cron → PGMQ → Edge Function)
                               ↓
-                    Supabase Realtime → Badge campana actualizado
+        Edge Function INSERT inbox_action con action_type heredado
                               ↓
-              Usuario click en acción pendiente
+                    Supabase Realtime → Badge 🔔 en AppHeader actualizado
                               ↓
-                    ActionDispatcher lee action_type
+              Usuario click en 🔔 → Abre Modal Inbox
                               ↓
-                  ┌───────────┼───────────────┐
-                  ↓           ↓               ↓
-           AI_ATOMIZE    CREATE_TASK     REVIEW_NOTE
-                  ↓           ↓               ↓
-         Envía a Gemini  Abre TASK_FORM  Abre NOTE_VIEWER
-                  ↓           ↓               ↓
-         3 subtareas     Tarea con tags    Nota repasada
-                  ↓           ↓               ↓
-              DB: Crea tareas + auto-etiqueta
+              Muestra lista de inbox_actions (pending + completed recientes)
                               ↓
+              Usuario click en acción específica
+                              ↓
+                    ¿Tiene action_type ≠ NONE?
+                    ┌──── SÍ ──────┐── NO ──┐
+                    ↓               ↓        ↓
+          ActionDispatcher     Solo marcar como leída
+          lee action_type
+                    ↓
+  ┌─────────┼──────────┼────────────┐
+  ↓         ↓          ↓            ↓
+AI_ATOMIZE CREATE_TASK REVIEW_NOTE CREATE_LOG
+  ↓         ↓          ↓            ↓
+Gemini   TASK_FORM  NOTE_VIEWER  LOG_FORM
+  ↓         ↓          ↓            ↓
+3 subtareas Tarea     Nota         Bitácora
+                    ↓
+        status='completed', execution_count++
+        (la acción permanece visible, re-ejecutable con confirmación)
+                    ↓
               Trigger calcula progreso KR
-                              ↓
+                    ↓
               Feedback: "+X% a tu KR hoy"
 ```
+
+> **Configuración:** El `action_type` de cada `scheduled_notification` se configura en el modal de Push Notifications (tab "Programadas") del AppHeader. El usuario elige qué acción debe disparar cada notificación recurrente.
 
 ### Especificación Formal (VDM) — Operaciones Críticas
 
@@ -309,19 +325,33 @@ CREATE TYPE metric_category AS ENUM (
 );
 ```
 
+#### Extensión a `scheduled_notifications` (action_type)
+
+```sql
+-- Agregar action_type a scheduled_notifications existente
+ALTER TABLE public.scheduled_notifications 
+ADD COLUMN action_type text DEFAULT 'NONE' 
+    CHECK (action_type IN ('NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE'));
+```
+
+> **Nota:** `CREATE_LOG` permite crear una entrada de bitácora para reportarte con tu "segundo cerebro".
+
 #### Tabla `inbox_actions`
 
 ```sql
 CREATE TABLE IF NOT EXISTS "public"."inbox_actions" (
     "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     "user_id" uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    "source_notification_id" uuid REFERENCES public.scheduled_notifications(id) ON DELETE SET NULL,
     "title" text NOT NULL,
     "description" text,
-    "action_type" text NOT NULL,               -- 'CREATE_TASK', 'REVIEW_NOTE', 'AI_ATOMIZE'
-    "action_payload" jsonb DEFAULT '{}',       -- Datos para el Modal
+    "action_type" text DEFAULT 'NONE'          -- 'NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE'
+        CHECK (action_type IN ('NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE')),
+    "action_payload" jsonb DEFAULT '{}',       -- Datos para el Modal del Action Dispatcher
     "status" text DEFAULT 'pending'
         CHECK (status IN ('pending', 'completed', 'dismissed')),
     "priority" int DEFAULT 1,
+    "execution_count" int DEFAULT 0,           -- Cuántas veces se ha ejecutado la acción
     "created_at" timestamptz DEFAULT now(),
     "completed_at" timestamptz
 );
@@ -330,6 +360,8 @@ ALTER TABLE "public"."inbox_actions" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own inbox actions" ON "public"."inbox_actions"
     FOR ALL TO authenticated USING (auth.uid() = user_id);
 ```
+
+> **Comportamiento de re-ejecución:** Cuando el usuario ejecuta una `inbox_action` con `action_type`, se marca `status='completed'` y `execution_count++`. La acción permanece visible en el Inbox y puede re-ejecutarse previa confirmación del usuario.
 
 #### Diagrama de Relaciones
 
@@ -397,11 +429,13 @@ const handleNotificationClick = (action: InboxAction) => {
 
 #### Tipos de Acción del Inbox
 
-| `action_type` | Descripción                   | Modal que abre  |
-| ------------- | ----------------------------- | --------------- |
-| `CREATE_TASK` | Crear tarea desde template    | `TASK_TEMPLATE` |
-| `REVIEW_NOTE` | Repasar una nota Zettelkasten | `NOTE_REVIEW`   |
-| `AI_ATOMIZE`  | Desglosar tarea grande con IA | `AI_ATOMIZER`   |
+| `action_type` | Descripción                                                   | Modal que abre  |
+| ------------- | ------------------------------------------------------------- | --------------- |
+| `NONE`        | Solo informativa, sin acción asociada                         | Ninguno         |
+| `CREATE_TASK` | Crear tarea desde template                                    | `TASK_TEMPLATE` |
+| `REVIEW_NOTE` | Redirigir a una nota para repasarla (Zettelkasten)            | `NOTE_REVIEW`   |
+| `CREATE_LOG`  | Crear una bitácora para reportarte con tu "segundo cerebro"   | `LOG_FORM`      |
+| `AI_ATOMIZE`  | Desglosar tarea grande con IA                                 | `AI_ATOMIZER`   |
 
 #### Prompt de Contención (IA para TDAH)
 
@@ -453,9 +487,14 @@ const handleNotificationClick = (action: InboxAction) => {
 
 ### Deuda Técnica Identificada
 
+- [ ] Agregar campo `action_type` a `scheduled_notifications` (migración declarativa vía `supabase/schemas/tables.sql`)
+- [ ] Crear tabla `inbox_actions` en `supabase/schemas/tables.sql`
+- [ ] Agregar botón 🔔 con badge al `AppHeader.vue` y su modal de Inbox
+- [ ] Agregar selector de `action_type` al formulario de `ScheduledNotificationsTab.vue`
+- [ ] Implementar lógica de re-ejecución con confirmación en acciones completadas
 - [ ] Refactorizar módulo de notificaciones actual para soportar `inbox_actions` como fuente principal
-- [ ] Definir RLS policies para `objectives`, `key_results` y `key_result_tags`
-- [ ] Tests E2E para el flujo completo: R-Rule → inbox_action → modal → tarea → progreso KR
+- [ ] Definir RLS policies para `objectives`, `key_results`, `key_result_tags` e `inbox_actions`
+- [ ] Tests E2E para el flujo completo: scheduled_notification → inbox_action → modal → tarea → progreso KR
 - [ ] Documentar el esquema de `action_payload` por cada `action_type`
 
 ### Matriz de Riesgos
@@ -495,14 +534,14 @@ const handleNotificationClick = (action: InboxAction) => {
 
 > Principios que deben respetarse en **toda decisión de diseño** de esta feature.
 
-| #   | Principio                     | Implementación                                                 |
-| --- | ----------------------------- | -------------------------------------------------------------- |
-| 1   | **Decisión única**            | Inbox muestra solo la acción de mayor prioridad                |
-| 2   | **Atomización forzada**       | IA bloquea tareas > 25 min y las desglosa                      |
-| 3   | **Tags sobre jerarquías**     | Sin clasificación previa; lanza y el sistema organiza          |
-| 4   | **Feedback inmediato**        | Notificación de progreso al completar un pomodoro              |
-| 5   | **Gamificación del filtro**   | Pesos en tags permiten combos que suben el puntaje más rápido  |
-| 6   | **Córtex prefrontal externo** | La IA actúa como filtro de realidad contra la hiperinformación |
+| #   | Principio                     | Implementación                                                                                                                       |
+| --- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | **Decisión única**            | Inbox muestra solo la acción de mayor prioridad                                                                                      |
+| 2   | **Atomización forzada**       | IA limita tareas > 25 min y las desglosa o simplifica minimo 25 min (manteniendo la configuracion de pomodoros dinamica del usuario) |
+| 3   | **Tags sobre jerarquías**     | Sin clasificación previa; lanza y el sistema organiza                                                                                |
+| 4   | **Feedback inmediato**        | Notificación de progreso al completar un pomodoro                                                                                    |
+| 5   | **Gamificación del filtro**   | Pesos en tags permiten combos que suben el puntaje más rápido                                                                        |
+| 6   | **Córtex prefrontal externo** | La IA actúa como filtro de realidad contra la hiperinformación                                                                       |
 
 ---
 

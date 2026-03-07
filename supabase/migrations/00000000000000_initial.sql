@@ -1,5 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS "vector" WITH SCHEMA "extensions";
+CREATE SCHEMA IF NOT EXISTS "pgmq";
 CREATE EXTENSION IF NOT EXISTS "pgmq" WITH SCHEMA "pgmq";
+
+-- Create queues so pgmq.a_* and pgmq.q_* tables exist before being referenced
+SELECT pgmq.create('pomodoro_webhooks');
+SELECT pgmq.create('notifications_queue');
 
 
 SET statement_timeout = 0;
@@ -28,7 +33,8 @@ CREATE TYPE "public"."pomodoro_state" AS ENUM (
     'current',
     'paused',
     'finished',
-    'skipped'
+    'skipped',
+    'idle'
 );
 
 
