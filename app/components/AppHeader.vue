@@ -26,12 +26,12 @@ const isDark = computed({
 // Props para configuración futura de acceso público
 const props = withDefaults(
   defineProps<{
-    showTimeline?: boolean;
+    showAnalytics?: boolean;
     showProfile?: boolean;
     showNotes?: boolean;
   }>(),
   {
-    showTimeline: true,
+    showAnalytics: true,
     showProfile: true,
     showNotes: true,
   },
@@ -39,7 +39,7 @@ const props = withDefaults(
 
 // Emits para comunicar acciones a la página padre
 const emit = defineEmits<{
-  (e: "openTimeline"): void;
+  (e: "openAnalytics"): void;
   (e: "openProfile"): void;
   (e: "openShortcuts"): void;
   (e: "openWebhook"): void;
@@ -208,10 +208,10 @@ const items = computed<DropdownMenuItem[][]>(() => {
       />
 
       <UButton
-        v-if="showTimeline"
-        @click="emit('openTimeline')"
+        v-if="showAnalytics"
+        @click="emit('openAnalytics')"
         icon="i-lucide:chart-column"
-        :label="breakpoints.sm.value ? 'Timeline' : ''"
+        :label="breakpoints.sm.value ? 'Analytics' : ''"
         class="hidden sm:inline-flex"
       />
 

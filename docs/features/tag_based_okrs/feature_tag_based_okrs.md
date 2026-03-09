@@ -106,16 +106,16 @@ El usuario experimenta un **triángulo de parálisis por análisis**:
 
 ### Requerimientos Funcionales (RF)
 
-| ID    | Descripción                                                                                                                                                                                                       | Prioridad |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| RF-01 | **OKRs Tag-Driven:** Los Key Results se miden automáticamente interceptando tags usadas en el día a día. Un Objective tiene múltiples Key Results; cada KR se alimenta de múltiples tags con pesos diferenciados. | Alta      |
-| RF-02 | **Inbox de Acciones (Anti-Parálisis):** Tabla tipo Pila (Stack) donde solo se muestra la acción de mayor prioridad. Los ítems no desaparecen hasta interacción: completar, delegar o posponer. Las acciones completadas siguen visibles y pueden re-ejecutarse con confirmación del usuario. | Alta      |
-| RF-03 | **Atomización Forzada con IA:** Si una tarea supera 1 Pomodoro (25 min), el sistema bloquea e invoca a la IA para desglosarla en exactamente 3 subtareas de 25 min. Las subtareas heredan los tags del OKR padre. | Alta      |
+| ID    | Descripción                                                                                                                                                                                                                                                                                                                | Prioridad |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| RF-01 | **OKRs Tag-Driven:** Los Key Results se miden automáticamente interceptando tags usadas en el día a día. Un Objective tiene múltiples Key Results; cada KR se alimenta de múltiples tags con pesos diferenciados.                                                                                                          | Alta      |
+| RF-02 | **Inbox de Acciones (Anti-Parálisis):** Tabla tipo Pila (Stack) donde solo se muestra la acción de mayor prioridad. Los ítems no desaparecen hasta interacción: completar, delegar o posponer. Las acciones completadas siguen visibles y pueden re-ejecutarse con confirmación del usuario.                               | Alta      |
+| RF-03 | **Atomización Forzada con IA:** Si una tarea supera 1 Pomodoro (25 min), el sistema bloquea e invoca a la IA para desglosarla en exactamente 3 subtareas de 25 min. Las subtareas heredan los tags del OKR padre.                                                                                                          | Alta      |
 | RF-04 | **Notificaciones con Action Types opcionales:** Las `scheduled_notifications` incluyen un campo `action_type` configurable (`CREATE_TASK`, `REVIEW_NOTE`, `CREATE_LOG`, `AI_ATOMIZE`, `NONE`). Al dispararse, generan una `inbox_action` con el `action_type` heredado. Si es `NONE`, la notificación es solo informativa. | Alta      |
-| RF-05 | **Dashboard del 1% (Feedback Inmediato):** Al terminar un pomodoro, el sistema notifica el progreso del KR asociado (e.g., "+0.4% a Enfoque Lúcido"). Radar Chart con las 7 cualidades.                           | Media     |
-| RF-06 | **Fórmula de progreso KR:** `Progreso = Σ (Métrica_Base_tag × Peso_tag)`. Tags como `#deep-work` peso `2.0`, `#admin` peso `0.5`.                                                                                 | Alta      |
-| RF-07 | **Action Dispatcher:** Router que lee `action_type` del payload y monta el modal correspondiente (`TASK_TEMPLATE`, `AI_ATOMIZER`, `NOTE_REVIEW`, `CREATE_LOG`). Si `action_type` es `NONE`, no monta modal.         | Alta      |
-| RF-08 | **🔔 Inbox Bell en AppHeader:** Botón campana en el header junto al toggle de dark mode, con badge de conteo de acciones `pending`. Abre un modal/popover con la lista de `inbox_actions`, cada una clickeable para disparar su `action_type` asociado. | Alta      |
+| RF-05 | **Dashboard del 1% (Feedback Inmediato):** Al terminar un pomodoro, el sistema notifica el progreso del KR asociado (e.g., "+0.4% a Enfoque Lúcido"). Radar Chart con las 7 cualidades.                                                                                                                                    | Media     |
+| RF-06 | **Fórmula de progreso KR:** `Progreso = Σ (Métrica_Base_tag × Peso_tag)`. Tags como `#deep-work` peso `2.0`, `#admin` peso `0.5`.                                                                                                                                                                                          | Alta      |
+| RF-07 | **Action Dispatcher:** Router que lee `action_type` del payload y monta el modal correspondiente (`TASK_TEMPLATE`, `AI_ATOMIZER`, `NOTE_REVIEW`, `CREATE_LOG`). Si `action_type` es `NONE`, no monta modal.                                                                                                                | Alta      |
+| RF-08 | **🔔 Inbox Bell en AppHeader:** Botón campana en el header junto al toggle de dark mode, con badge de conteo de acciones `pending`. Abre un modal/popover con la lista de `inbox_actions`, cada una clickeable para disparar su `action_type` asociado.                                                                    | Alta      |
 
 ### Requerimientos No Funcionales (RNF)
 
@@ -329,8 +329,8 @@ CREATE TYPE metric_category AS ENUM (
 
 ```sql
 -- Agregar action_type a scheduled_notifications existente
-ALTER TABLE public.scheduled_notifications 
-ADD COLUMN action_type text DEFAULT 'NONE' 
+ALTER TABLE public.scheduled_notifications
+ADD COLUMN action_type text DEFAULT 'NONE'
     CHECK (action_type IN ('NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE'));
 ```
 
@@ -346,6 +346,7 @@ CREATE TABLE IF NOT EXISTS "public"."inbox_actions" (
     "title" text NOT NULL,
     "description" text,
     "action_type" text DEFAULT 'NONE'          -- 'NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE'
+
         CHECK (action_type IN ('NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE')),
     "action_payload" jsonb DEFAULT '{}',       -- Datos para el Modal del Action Dispatcher
     "status" text DEFAULT 'pending'
@@ -429,13 +430,13 @@ const handleNotificationClick = (action: InboxAction) => {
 
 #### Tipos de Acción del Inbox
 
-| `action_type` | Descripción                                                   | Modal que abre  |
-| ------------- | ------------------------------------------------------------- | --------------- |
-| `NONE`        | Solo informativa, sin acción asociada                         | Ninguno         |
-| `CREATE_TASK` | Crear tarea desde template                                    | `TASK_TEMPLATE` |
-| `REVIEW_NOTE` | Redirigir a una nota para repasarla (Zettelkasten)            | `NOTE_REVIEW`   |
-| `CREATE_LOG`  | Crear una bitácora para reportarte con tu "segundo cerebro"   | `LOG_FORM`      |
-| `AI_ATOMIZE`  | Desglosar tarea grande con IA                                 | `AI_ATOMIZER`   |
+| `action_type` | Descripción                                                 | Modal que abre  |
+| ------------- | ----------------------------------------------------------- | --------------- |
+| `NONE`        | Solo informativa, sin acción asociada                       | Ninguno         |
+| `CREATE_TASK` | Crear tarea desde template                                  | `TASK_TEMPLATE` |
+| `REVIEW_NOTE` | Redirigir a una nota para repasarla (Zettelkasten)          | `NOTE_REVIEW`   |
+| `CREATE_LOG`  | Crear una bitácora para reportarte con tu "segundo cerebro" | `LOG_FORM`      |
+| `AI_ATOMIZE`  | Desglosar tarea grande con IA                               | `AI_ATOMIZER`   |
 
 #### Prompt de Contención (IA para TDAH)
 

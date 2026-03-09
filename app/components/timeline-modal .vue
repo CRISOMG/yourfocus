@@ -3,7 +3,7 @@
     :ui="{ body: 'sm:p-0' }"
     :overlay="false"
     v-model:open="isOpen"
-    title="Timeline"
+    title="Analytics"
   >
     <template #body>
       <div class="flex h-[85vh] p-0">

@@ -284,36 +284,7 @@ for each row
 execute function public.handle_task_keep_reset();
 
 
--- Function to sync keep tasks to current pomodoro (triggered on task update)
-create or replace function public.sync_task_keep_to_current_pomodoro()
-returns trigger as $$
-declare
-  current_pomodoro_id bigint;
-begin
-  -- Get the current pomodoro for the user
-  select id into current_pomodoro_id
-  from public.pomodoros
-  where user_id = NEW.user_id 
-    and state = 'current'
-  limit 1;
-
-  if current_pomodoro_id is not null then
-    if NEW.keep = true then
-      -- Insert if not exists
-      insert into public.pomodoros_tasks (pomodoro_id, task_id, user_id)
-      values (current_pomodoro_id, NEW.id, NEW.user_id)
-      on conflict (pomodoro_id, task_id) do nothing;
-    else
-      -- Remove if keep is set to false (unassign)
-      delete from public.pomodoros_tasks
-      where pomodoro_id = current_pomodoro_id
-        and task_id = NEW.id;
-    end if;
-  end if;
-
-  return NEW;
-end;
-$$ language plpgsql SET search_path = public;
+-- pomodoros_tasks functions removed in favor of temporal logic
 
 CREATE OR REPLACE FUNCTION public.set_tasks_done_at()
 RETURNS TRIGGER AS $$
@@ -351,51 +322,11 @@ BEFORE INSERT ON "public"."tasks"
 FOR EACH ROW
 EXECUTE FUNCTION public.set_tasks_done_at_insert();
 
-create trigger tr_sync_task_keep
-after update of keep on public.tasks
-for each row
-when (OLD.keep is distinct from NEW.keep)
-execute function public.sync_task_keep_to_current_pomodoro();
-
-
--- Function to carry over keep tasks to NEW pomodoro
-create or replace function public.carry_over_keep_tasks()
-returns trigger as $$
-begin
-  insert into public.pomodoros_tasks (pomodoro_id, task_id, user_id)
-  select NEW.id, t.id, NEW.user_id
-  from public.tasks t
-  where t.user_id = NEW.user_id
-    and t.keep = true
-    and (t.done = false or t.done is null)
-    and (t.archived = false or t.archived is null)
-  on conflict (pomodoro_id, task_id) do nothing;
-  return NEW;
-end;
-$$ language plpgsql SET search_path = public;
-
-create trigger tr_carry_over_keep_tasks
-after insert on public.pomodoros
-for each row
-execute function public.carry_over_keep_tasks();
-
--- Also trigger on update in case a pomodoro transitions to current? 
--- The user said "with the following pomodoro created", so mainly insert.
--- But if we "play" a paused one? "Relation of the task... with the following pomodoro". 
--- Usually "Start/Select" creates a new one. "Play" resumes. 
--- If I resume a pomodoro, should "keep" tasks be added? 
--- The prompt implies "next pomodoro created". Let's stick to INSERT for now to avoid re-adding tasks to an old pomodoro if we revisit it (though state 'current' check handles that).
--- Actually, if I pause and resume, I might want new 'keep' tasks to join?
--- Let's stick to INSERT for 'carry over' logic as explicitly requested "with the following pomodoro created".
-
-
-
-
-
+-- carry over tasks and sync triggers removed in favor of temporal logic
 CREATE OR REPLACE TRIGGER "on_auth_user_created" AFTER INSERT ON "auth"."users" FOR EACH ROW EXECUTE FUNCTION public."handle_new_user"();
 
-DROP TRIGGER IF EXISTS on_auth_user_password_update ON auth.users;
-CREATE TRIGGER on_auth_user_password_update
+DROP TRIGGER IF EXISTS on_auth_user_updated_password ON auth.users;
+CREATE TRIGGER on_auth_user_updated_password
 AFTER UPDATE OF encrypted_password ON auth.users
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_user_password_update();
@@ -471,4 +402,73 @@ begin
   return NEW;
 end;
 $$;
+-- #region OKR Progress Calculation
+CREATE OR REPLACE FUNCTION public.calculate_kr_progress_on_pomodoro_finish()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_kr RECORD;
+BEGIN
+    IF NEW.state = 'finished' AND (OLD.state IS NULL OR OLD.state != 'finished') THEN
+        FOR v_kr IN
+            SELECT kr.id, krt.weight, kr.metric_type
+            FROM public.key_results kr
+            JOIN public.objectives o ON kr.objective_id = o.id
+            JOIN public.key_result_tags krt ON kr.id = krt.key_result_id
+            JOIN public.pomodoros_tags pt ON pt.tag = krt.tag_id
+            WHERE o.user_id = NEW.user_id
+              AND pt.pomodoro = NEW.id
+        LOOP
+            IF v_kr.metric_type = 'COUNT_ATOMIC' THEN
+                UPDATE public.key_results 
+                SET current_value = current_value + (1 * v_kr.weight)
+                WHERE id = v_kr.id;
+            ELSIF v_kr.metric_type = 'TIME_INVESTMENT' THEN
+                UPDATE public.key_results 
+                SET current_value = current_value + ((NEW.timelapse::numeric / 60.0) * v_kr.weight)
+                WHERE id = v_kr.id;
+            END IF;
+        END LOOP;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS tr_calculate_kr_progress_on_pomodoro_finish ON public.pomodoros;
+CREATE TRIGGER tr_calculate_kr_progress_on_pomodoro_finish
+AFTER UPDATE OF state ON public.pomodoros
+FOR EACH ROW
+EXECUTE FUNCTION public.calculate_kr_progress_on_pomodoro_finish();
+
+CREATE OR REPLACE FUNCTION public.calculate_kr_progress_on_note_tag()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_kr RECORD;
+    v_user_id uuid;
+BEGIN
+    SELECT user_id INTO v_user_id FROM public.notes WHERE id = NEW.note_id;
+
+    FOR v_kr IN
+        SELECT kr.id, krt.weight
+        FROM public.key_results kr
+        JOIN public.objectives o ON kr.objective_id = o.id
+        JOIN public.key_result_tags krt ON kr.id = krt.key_result_id
+        WHERE o.user_id = v_user_id
+          AND krt.tag_id = NEW.tag_id
+          AND kr.metric_type = 'KNOWLEDGE_DENSITY'
+    LOOP
+        UPDATE public.key_results 
+        SET current_value = current_value + (1 * v_kr.weight)
+        WHERE id = v_kr.id;
+    END LOOP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS tr_calculate_kr_progress_on_note_tag ON public.notes_tags;
+CREATE TRIGGER tr_calculate_kr_progress_on_note_tag
+AFTER INSERT ON public.notes_tags
+FOR EACH ROW
+EXECUTE FUNCTION public.calculate_kr_progress_on_note_tag();
+-- #endregion
+
 -- #endregion

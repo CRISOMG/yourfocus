@@ -5,8 +5,8 @@ DROP POLICY IF EXISTS "Auth users and PAT can insert tags" ON "public"."tags";
 DROP POLICY IF EXISTS "Auth users and PAT can read tags" ON "public"."tags";
 -- Removed duplicate policy
 CREATE POLICY "Enable delete for own tags" ON "public"."tags" FOR DELETE TO "authenticated" USING (((select auth.uid()) = "user_id"));
--- Redundant policies removed: "Enable insert for own tags", "Enable read access for own tags"
--- Removed duplicate policy
+CREATE POLICY "Enable insert for own tags" ON "public"."tags" FOR INSERT TO "authenticated" WITH CHECK ((((select auth.uid()) = "user_id") AND "public"."is_valid_personal_access_token"()));
+CREATE POLICY "Enable read access for own tags" ON "public"."tags" FOR SELECT TO "authenticated" USING ((((select auth.uid()) = "user_id") AND "public"."is_valid_personal_access_token"()));
 CREATE POLICY "Enable update for own tags" ON "public"."tags" FOR UPDATE TO "authenticated" USING (((select auth.uid()) = "user_id")) WITH CHECK (((select auth.uid()) = "user_id"));
 
 
@@ -36,9 +36,9 @@ CREATE POLICY "Enable users to edit their own data only" ON "public"."pomodoros"
 -- Redundant policy removed: "Enable users to view their own data only"
 
 ALTER TABLE "public"."pomodoros_cycles" ENABLE ROW LEVEL SECURITY;
--- Redundant policy removed: "Enable insert for authenticated users only"
--- Removed duplicate policy
 
+CREATE POLICY "Enable insert for authenticated users only" 
+ON "public"."pomodoros_cycles" FOR INSERT TO "authenticated" WITH CHECK (("user_id" = (select auth.uid())));
 DROP POLICY IF EXISTS "Enable users and personal access tokens to view their own data " ON "public"."pomodoros_cycles";
 DROP POLICY IF EXISTS "Enable users and PAT to view cycles" ON "public"."pomodoros_cycles";
 CREATE POLICY "Enable users and PAT to view cycles" ON "public"."pomodoros_cycles" FOR SELECT TO "authenticated" USING ((((select auth.uid()) = "user_id") AND "public"."is_valid_personal_access_token"()));
@@ -91,19 +91,24 @@ GRANT ALL ON TABLE "public"."api_keys" TO "authenticated";
 GRANT ALL ON TABLE "public"."api_keys" TO "service_role";
 
 
-alter table public.pomodoros_tasks enable row level security;
+-- #region OKR Policies
+alter table public.objectives enable row level security;
+create policy "Users can manage their own objectives" on public.objectives for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
-create policy "Users can view their own pomodoro tasks"
-on public.pomodoros_tasks for select
-using ((select auth.uid()) = user_id);
+alter table public.key_results enable row level security;
+create policy "Users can manage key_results of their objectives" on public.key_results for all to authenticated using (objective_id in (select id from public.objectives where user_id = (select auth.uid()))) with check (objective_id in (select id from public.objectives where user_id = (select auth.uid())));
 
-create policy "Users can insert their own pomodoro tasks"
-on public.pomodoros_tasks for insert
-with check ((select auth.uid()) = user_id);
+alter table public.key_result_tags enable row level security;
+create policy "Users can manage tags of their key_results" on public.key_result_tags for all to authenticated using (key_result_id in (select id from public.key_results where objective_id in (select id from public.objectives where user_id = (select auth.uid())))) with check (key_result_id in (select id from public.key_results where objective_id in (select id from public.objectives where user_id = (select auth.uid()))));
+-- #endregion
 
-create policy "Users can delete their own pomodoro tasks"
-on public.pomodoros_tasks for delete
-using ((select auth.uid()) = user_id);
+-- #region Zettelkasten Notes Policies
+alter table public.notes enable row level security;
+create policy "Users can manage their own notes" on public.notes for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+
+alter table public.notes_tags enable row level security;
+create policy "Users can manage tags of their notes" on public.notes_tags for all to authenticated using (note_id in (select id from public.notes where user_id = (select auth.uid()))) with check (note_id in (select id from public.notes where user_id = (select auth.uid())));
+-- #endregion
 
 
 create policy "Allow access to own pomodoro sync channel"
@@ -160,6 +165,105 @@ CREATE POLICY "Allow authenticated user to insert their avatar" ON "storage"."ob
 CREATE POLICY "Allow authenticated user to select their avatar" ON "storage"."objects" FOR SELECT TO "authenticated" USING ((("bucket_id" = 'avatars'::"text") AND (("auth"."uid"())::"text" = "split_part"("name", '/'::"text", 1))));
 CREATE POLICY "Avatars are viewable by everyone" ON "storage"."objects" FOR SELECT USING (("bucket_id" = 'avatars'::"text"));
 
+
+-- #region TIME_SESSIONS and FLOWS policies
+ALTER TABLE public.time_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own time_sessions"
+  ON public.time_sessions FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own time_sessions"
+  ON public.time_sessions FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own time_sessions"
+  ON public.time_sessions FOR UPDATE
+  USING (auth.uid() = user_id);
+
+ALTER TABLE public.flows ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own flows"
+  ON public.flows FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own flows"
+  ON public.flows FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own flows"
+  ON public.flows FOR UPDATE
+  USING (auth.uid() = user_id);
+-- #endregion
+
+-- #region TASK_TEMPLATES policies
+ALTER TABLE public.task_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.task_templates_tags ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own templates"
+  ON public.task_templates FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own templates"
+  ON public.task_templates FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own templates"
+  ON public.task_templates FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own templates"
+  ON public.task_templates FOR DELETE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view tags of their own templates"
+  ON public.task_templates_tags FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.task_templates
+      WHERE task_templates.id = task_templates_tags.template_id
+      AND task_templates.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can insert tags for their own templates"
+  ON public.task_templates_tags FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.task_templates
+      WHERE task_templates.id = task_templates_tags.template_id
+      AND task_templates.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can update tags for their own templates"
+  ON public.task_templates_tags FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.task_templates
+      WHERE task_templates.id = task_templates_tags.template_id
+      AND task_templates.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.task_templates
+      WHERE task_templates.id = task_templates_tags.template_id
+      AND task_templates.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can delete tags for their own templates"
+  ON public.task_templates_tags FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.task_templates
+      WHERE task_templates.id = task_templates_tags.template_id
+      AND task_templates.user_id = auth.uid()
+    )
+  );
+-- #endregion
 
 -- #region New Tables Policies
 -- documents

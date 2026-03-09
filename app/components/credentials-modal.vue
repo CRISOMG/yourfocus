@@ -5,7 +5,7 @@
     :ui="{ content: 'sm:max-w-xl' }"
   >
     <template #body>
-      <UTabs :items="tabs" class="w-full">
+      <UTabs :default-value="'pat'" :items="tabs" class="w-full">
         <template #content="{ item }">
           <!-- Access Tokens Tab -->
           <div v-if="item.value === 'pat'" class="space-y-4 pt-4">

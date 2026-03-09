@@ -8,7 +8,7 @@
   >
     <div class="flex items-center justify-between p-1">
       <p class="text-lg">
-        Tasks {{ sortedTasks && `(${sortedTasks.length})` }}
+        Tasks {{ currTasksStageLength && `(${currTasksStageLength})` }}
       </p>
       <div class="flex items-center gap-2">
         <!-- Focus Mode Toggle -->
@@ -409,6 +409,10 @@ const tasksByStage = computed(() => {
   }
 
   return grouped;
+});
+
+const currTasksStageLength = computed(() => {
+  return tasksByStage.value[activeStage.value].length;
 });
 
 // Handle stage change for a task

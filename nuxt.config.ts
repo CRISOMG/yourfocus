@@ -43,6 +43,7 @@ export default defineNuxtConfig({
       "~/composables",
       "~/composables/*/index.{ts,js,mjs,mts}",
       "~/composables/**",
+      "./shared/composables/**",
     ],
   },
 

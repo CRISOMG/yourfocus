@@ -3,7 +3,7 @@
 
 export interface LayoutModals {
   openNotes: () => void;
-  openTimeline: () => void;
+  openAnalytics: () => void;
   openProfile: () => void;
   openShortcuts: () => void;
   openWebhook: () => void;
@@ -26,7 +26,7 @@ export function useLayoutModals(): LayoutModals {
     // Fallback noop if used outside provider
     return {
       openNotes: () => {},
-      openTimeline: () => {},
+      openAnalytics: () => {},
       openProfile: () => {},
       openShortcuts: () => {},
       openWebhook: () => {},

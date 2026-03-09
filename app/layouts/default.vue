@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import TimelineModal from "~/components/timeline-modal .vue";
+import AnalyticsModal from "~/components/analytics-modal.vue";
 
 const openProfileModal = ref(false);
-const openTimelineModal = ref(false);
+const openAnalyticsModal = ref(false);
 const openShortcutsModal = ref(false);
 const openWebhookModal = ref(false);
 const openCredentialsModal = ref(false);
@@ -17,8 +17,8 @@ provideLayoutModals({
   openNotes: () => {
     openNotesModal.value = true;
   },
-  openTimeline: () => {
-    openTimelineModal.value = true;
+  openAnalytics: () => {
+    openAnalyticsModal.value = !openAnalyticsModal.value;
   },
   openProfile: () => {
     openProfileModal.value = true;
@@ -54,7 +54,9 @@ onMounted(() => {
   if (route.query.inbox === "open") {
     openInboxModal.value = true;
     // Clean up query params to avoid re-triggering on navigation
-    router.replace({ query: { ...route.query, inbox: undefined, action_id: undefined } });
+    router.replace({
+      query: { ...route.query, inbox: undefined, action_id: undefined },
+    });
   }
 });
 
@@ -64,7 +66,9 @@ watch(
   (val) => {
     if (val === "open") {
       openInboxModal.value = true;
-      router.replace({ query: { ...route.query, inbox: undefined, action_id: undefined } });
+      router.replace({
+        query: { ...route.query, inbox: undefined, action_id: undefined },
+      });
     }
   },
 );
@@ -73,7 +77,7 @@ watch(
 <template>
   <UContainer class="mb-16 p-0">
     <AppHeader
-      @open-timeline="openTimelineModal = true"
+      @open-analytics="openAnalyticsModal = true"
       @open-profile="openProfileModal = true"
       @open-shortcuts="openShortcutsModal = true"
       @open-webhook="openWebhookModal = true"
@@ -92,8 +96,8 @@ watch(
     <template v-if="openProfileModal">
       <UserProfileModal v-model="openProfileModal" />
     </template>
-    <template v-if="openTimelineModal">
-      <TimelineModal v-model="openTimelineModal" />
+    <template v-if="openAnalyticsModal">
+      <AnalyticsModal v-model="openAnalyticsModal" />
     </template>
     <ShortcutsModal v-model="openShortcutsModal" />
     <WebhookModal v-model="openWebhookModal" />

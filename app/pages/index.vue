@@ -245,10 +245,10 @@
           <!-- Timeline button -->
           <button
             class="flex flex-col items-center gap-1 text-(--ui-text)/60 hover:text-default transition-colors active:scale-95"
-            @click="layoutModals.openTimeline()"
+            @click="layoutModals.openAnalytics()"
           >
             <UIcon name="i-lucide-chart-column" class="w-6 h-6" />
-            <span class="text-[10px] font-medium">Timeline</span>
+            <span class="text-[10px] font-medium">Analytics</span>
           </button>
         </div>
       </nav>

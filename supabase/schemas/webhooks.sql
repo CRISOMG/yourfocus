@@ -26,6 +26,7 @@ CREATE TABLE public.webhook_trace (
 );
 
 CREATE INDEX IF NOT EXISTS idx_webhook_trace_msg_id ON public.webhook_trace(pgmq_msg_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_trace_user_id ON public.webhook_trace USING btree (user_id);
 
 -- Enable RLS for traceability
 ALTER TABLE public.webhook_trace ENABLE ROW LEVEL SECURITY;
