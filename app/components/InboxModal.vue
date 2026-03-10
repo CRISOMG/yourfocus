@@ -1,86 +1,22 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/auth";
+import { actionTypeMeta, useInboxController, type InboxAction } from "~/composables/inbox/use-inbox-controller";
 
 const open = defineModel<boolean>({ default: false });
 
-const supabase = useSupabaseClient();
-const authStore = useAuthStore();
-const toast = useToast();
+const {
+  inboxActions,
+  pendingActions,
+  completedActions,
+  loading,
+  unreadCount,
+  fetchInboxActions,
+  markAsCompleted,
+  dismissAction,
+  dispatchAction
+} = useInboxController();
 
-// Action type metadata
-const actionTypeMeta: Record<
-  string,
-  { label: string; icon: string; color: string }
-> = {
-  NONE: { label: "Informativa", icon: "i-lucide-bell", color: "neutral" },
-  CREATE_TASK: {
-    label: "Crear tarea",
-    icon: "i-lucide-list-todo",
-    color: "primary",
-  },
-  REVIEW_NOTE: {
-    label: "Repasar nota",
-    icon: "i-lucide-book-open",
-    color: "info",
-  },
-  CREATE_LOG: {
-    label: "Crear bitácora",
-    icon: "i-lucide-notebook-pen",
-    color: "success",
-  },
-  AI_ATOMIZE: {
-    label: "Atomizar con IA",
-    icon: "i-lucide-sparkles",
-    color: "warning",
-  },
-};
-
-interface InboxAction {
-  id: string;
-  title: string;
-  description: string | null;
-  action_type: string;
-  action_payload: Record<string, any>;
-  status: "pending" | "completed" | "dismissed";
-  priority: number;
-  execution_count: number;
-  created_at: string;
-  completed_at: string | null;
-}
-
-const inboxActions = ref<InboxAction[]>([]);
-const loading = ref(false);
 const confirmingReExecution = ref<string | null>(null);
-
-async function fetchInboxActions() {
-  if (!authStore.user?.id) return;
-  loading.value = true;
-  try {
-    const { data, error } = await supabase
-      .from("inbox_actions")
-      .select("*")
-      .eq("user_id", authStore.user.id)
-      .in("status", ["pending", "completed"])
-      .order("priority", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (error) throw error;
-    inboxActions.value = (data as InboxAction[]) || [];
-  } catch (e: any) {
-    console.error("Error fetching inbox actions:", e);
-  } finally {
-    loading.value = false;
-  }
-}
-
-const pendingActions = computed(() =>
-  inboxActions.value.filter((a) => a.status === "pending"),
-);
-
-const completedActions = computed(() =>
-  inboxActions.value.filter((a) => a.status === "completed"),
-);
 
 async function executeAction(action: InboxAction) {
   // If already completed, ask for confirmation to re-execute
@@ -103,93 +39,6 @@ async function executeAction(action: InboxAction) {
 
   // Mark as completed and increment execution_count
   await markAsCompleted(action);
-}
-
-function dispatchAction(action: InboxAction) {
-  const payload = action.action_payload || {};
-
-  switch (action.action_type) {
-    case "CREATE_TASK":
-      toast.add({
-        title: "Crear tarea",
-        description: payload.title || action.title,
-        color: "info",
-      });
-      // TODO: Open TASK_FORM modal via layout modals
-      break;
-    case "REVIEW_NOTE":
-      toast.add({
-        title: "Repasar nota",
-        description: payload.title || action.title,
-        color: "info",
-      });
-      // TODO: Open NOTE_VIEWER modal
-      break;
-    case "CREATE_LOG":
-      toast.add({
-        title: "Crear bitácora",
-        description: "Abriendo formulario de bitácora...",
-        color: "info",
-      });
-      // TODO: Open LOG_FORM modal
-      break;
-    case "AI_ATOMIZE":
-      toast.add({
-        title: "Atomizar con IA",
-        description: "Preparando desglose de tarea...",
-        color: "info",
-      });
-      // TODO: Open AI_ATOMIZER modal
-      break;
-  }
-}
-
-async function markAsCompleted(action: InboxAction) {
-  try {
-    const { error } = await supabase
-      .from("inbox_actions")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        execution_count: (action.execution_count || 0) + 1,
-      })
-      .eq("id", action.id);
-
-    if (error) throw error;
-
-    // Update locally
-    const idx = inboxActions.value.findIndex((a) => a.id === action.id);
-    if (idx !== -1) {
-      inboxActions.value[idx] = {
-        ...inboxActions.value[idx],
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        execution_count: (action.execution_count || 0) + 1,
-      };
-    }
-  } catch (e: any) {
-    console.error("Error updating inbox action:", e);
-    toast.add({
-      title: "Error",
-      description: "No se pudo actualizar la acción",
-      color: "error",
-    });
-  }
-}
-
-async function dismissAction(action: InboxAction) {
-  try {
-    const { error } = await supabase
-      .from("inbox_actions")
-      .update({ status: "dismissed" })
-      .eq("id", action.id);
-
-    if (error) throw error;
-
-    inboxActions.value = inboxActions.value.filter((a) => a.id !== action.id);
-  } catch (e: any) {
-    console.error("Error dismissing inbox action:", e);
-  }
 }
 
 function formatTimeAgo(dateStr: string): string {

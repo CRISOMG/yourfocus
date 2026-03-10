@@ -439,6 +439,47 @@ AFTER UPDATE OF state ON public.pomodoros
 FOR EACH ROW
 EXECUTE FUNCTION public.calculate_kr_progress_on_pomodoro_finish();
 
+CREATE OR REPLACE FUNCTION public.calculate_kr_progress_on_task_done()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+    v_kr RECORD;
+BEGIN
+    -- Only trigger when stage changes to 'done'
+    IF (NEW.stage = 'done' AND (OLD.stage IS NULL OR OLD.stage != 'done')) OR (NEW.done = true AND (OLD.done IS NULL OR OLD.done = false)) THEN
+        FOR v_kr IN
+            SELECT kr.id, krt.weight
+            FROM public.key_results kr
+            JOIN public.objectives o ON kr.objective_id = o.id
+            JOIN public.key_result_tags krt ON kr.id = krt.key_result_id
+            WHERE o.user_id = NEW.user_id
+              AND kr.metric_type = 'COUNT_ATOMIC'
+              AND (
+                  krt.tag_id = NEW.tag_id
+                  OR EXISTS (
+                      SELECT 1 FROM public.tasks_tags tt 
+                      WHERE tt.task = NEW.id AND tt.tag = krt.tag_id
+                  )
+              )
+        LOOP
+            UPDATE public.key_results 
+            SET current_value = current_value + (1 * v_kr.weight)
+            WHERE id = v_kr.id;
+        END LOOP;
+    END IF;
+    RETURN NEW;
+END;
+$function$;
+
+-- Trigger for task completion
+DROP TRIGGER IF EXISTS tr_calculate_kr_progress_on_task_done ON public.tasks;
+CREATE TRIGGER tr_calculate_kr_progress_on_task_done 
+AFTER UPDATE OF stage, done ON public.tasks 
+FOR EACH ROW 
+EXECUTE FUNCTION public.calculate_kr_progress_on_task_done();
+
 CREATE OR REPLACE FUNCTION public.calculate_kr_progress_on_note_tag()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -471,4 +512,199 @@ FOR EACH ROW
 EXECUTE FUNCTION public.calculate_kr_progress_on_note_tag();
 -- #endregion
 
+-- #region Storage Webhooks (Zettelkasten Sync)
+-- Webhook configuration for the `sync-markdown` Edge Function
+CREATE OR REPLACE FUNCTION public.handle_storage_sync_markdown()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_url text;
+  v_payload jsonb;
+  v_request_id bigint;
+  v_service_key text;
+BEGIN
+  -- 1. Intentar obtener de PostgREST el request info (funciona cuando se sube por API/App)
+  v_url := public.supabase_url();
+  
+  -- 2. Fallback a custom setting de postgres (ej. alter database SET app.settings.supabase_url TO ...)
+  IF v_url IS NULL OR v_url = '' THEN
+     v_url := current_setting('app.settings.supabase_url', true);
+  END IF;
+
+  -- 3. Fallback de desarrollo local por defecto
+  IF v_url IS NULL OR v_url = '' THEN
+     v_url := 'http://host.docker.internal:54321';
+  END IF;
+
+  -- Obtener Service Role Key para poder llamar a Edge Functions que verifican JWT
+  SELECT decrypted_secret INTO v_service_key 
+  FROM vault.decrypted_secrets 
+  WHERE name = 'service_role_key' 
+  LIMIT 1;
+
+  -- Construir el Payload del webhook estándar de Supabase
+  v_payload := jsonb_build_object(
+    'type', TG_OP,
+    'table', TG_TABLE_NAME,
+    'schema', TG_TABLE_SCHEMA,
+    'record', row_to_json(NEW),
+    'old_record', row_to_json(OLD)
+  );
+
+  -- Disparar la Edge Function usando pg_net nativo
+  SELECT net.http_post(
+      url := v_url || '/functions/v1/sync-markdown',
+      body := v_payload,
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || COALESCE(v_service_key, 'MISSING_KEY')
+      )
+  ) INTO v_request_id;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS tr_storage_objects_sync_markdown ON storage.objects;
+CREATE TRIGGER tr_storage_objects_sync_markdown
+AFTER INSERT OR UPDATE OR DELETE ON storage.objects
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_storage_sync_markdown();
+-- #endregion
+
+-- #region KPI Analytics (Radar Chart)
+CREATE OR REPLACE FUNCTION public.get_user_kpi_stats(p_timeframe_days INT DEFAULT 7)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_user_id uuid := auth.uid();
+    v_enfoque int;
+    v_agencia int;
+    v_curiosidad int;
+    v_interes int;
+    v_competencia numeric;
+    v_lucidez int;
+BEGIN
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    -- Enfoque: Focus Pomodoros completed in the timeframe
+    SELECT count(*) INTO v_enfoque
+    FROM public.pomodoros
+    WHERE user_id = v_user_id
+      AND type = 'focus'
+      AND state = 'finished'
+      AND created_at >= (now() - (p_timeframe_days || ' days')::interval);
+
+    -- Agencia: Tasks completed (using updated_at or done_at if available)
+    SELECT count(*) INTO v_agencia
+    FROM public.tasks
+    WHERE user_id = v_user_id
+      AND (stage = 'done' OR done = true)
+      AND updated_at >= (now() - (p_timeframe_days || ' days')::interval);
+
+    -- Curiosidad: Notes (Second Brain markdown) created
+    SELECT count(*) INTO v_curiosidad
+    FROM public.notes
+    WHERE user_id = v_user_id
+      AND created_at >= (now() - (p_timeframe_days || ' days')::interval);
+
+    -- Interés: Unique tags used across activities in timeframe
+    WITH user_recent_tags AS (
+        SELECT tag_id FROM public.tasks WHERE user_id = v_user_id AND updated_at >= (now() - (p_timeframe_days || ' days')::interval) AND tag_id IS NOT NULL
+        UNION
+        SELECT tag FROM public.pomodoros_tags pt JOIN public.pomodoros p ON pt.pomodoro = p.id WHERE p.user_id = v_user_id AND p.created_at >= (now() - (p_timeframe_days || ' days')::interval)
+        UNION
+        SELECT tag_id FROM public.notes_tags nt JOIN public.notes n ON nt.note_id = n.id WHERE n.user_id = v_user_id AND n.created_at >= (now() - (p_timeframe_days || ' days')::interval)
+    )
+    SELECT count(*) INTO v_interes FROM user_recent_tags;
+
+    -- Competencia: Average progress of active Key Results (0-100 score)
+    SELECT COALESCE(avg(
+        CASE 
+            WHEN target_value = 0 THEN 0 
+            ELSE LEAST(current_value / target_value, 1.0) * 100 
+        END
+    ), 0) INTO v_competencia
+    FROM public.key_results kr
+    JOIN public.objectives o ON kr.objective_id = o.id
+    WHERE o.user_id = v_user_id;
+
+    -- Lucidez: Consistency (Distinct active days using time_sessions)
+    SELECT count(DISTINCT date_trunc('day', created_at)) INTO v_lucidez
+    FROM public.time_sessions
+    WHERE user_id = v_user_id
+      AND created_at >= (now() - (p_timeframe_days || ' days')::interval);
+
+    RETURN jsonb_build_object(
+        'enfoque', v_enfoque,
+        'agencia', v_agencia,
+        'curiosidad', v_curiosidad,
+        'interes', v_interes,
+        'competencia', round(v_competencia::numeric, 2),
+        'lucidez', v_lucidez
+    );
+END;
+$$;
+-- #endregion
+
+-- #region OKR Gamification (Progress Feed)
+CREATE OR REPLACE FUNCTION public.handle_okr_progress_celebration()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_diff numeric;
+    v_objective_title text;
+    v_user_id uuid;
+BEGIN
+    -- Only trigger if the current_value has actually increased
+    IF NEW.current_value > OLD.current_value THEN
+        v_diff := NEW.current_value - OLD.current_value;
+        
+        -- Get the objective details
+        SELECT o.title, o.user_id INTO v_objective_title, v_user_id
+        FROM public.objectives o
+        WHERE o.id = NEW.objective_id;
+
+        -- Insert into inbox_actions for the UI Toast / Feed & Chat integration
+        INSERT INTO public.inbox_actions (
+            user_id,
+            title,
+            description,
+            action_type,
+            action_payload,
+            priority
+        ) VALUES (
+            v_user_id,
+            'Progreso OKR: ' || NEW.title,
+            '¡Sumaste ' || v_diff::text || ' de progreso a "' || v_objective_title || '"! 🚀',
+            'OKR_PROGRESS',
+            jsonb_build_object(
+                'key_result_id', NEW.id,
+                'objective_id', NEW.objective_id,
+                'diff', v_diff,
+                'new_value', NEW.current_value,
+                'target_value', NEW.target_value
+            ),
+            1
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS tr_okr_progress_celebration ON public.key_results;
+CREATE TRIGGER tr_okr_progress_celebration
+AFTER UPDATE OF current_value ON public.key_results
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_okr_progress_celebration();
 -- #endregion

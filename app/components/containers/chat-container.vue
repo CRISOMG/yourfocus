@@ -418,13 +418,36 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => route.query.q,
+  (newQ) => {
+    if (newQ && typeof newQ === "string") {
+      chat.sendMessage({ text: String(newQ) });
+      router.replace({ query: { ...route.query, q: undefined } });
+    }
+  },
+  { immediate: true },
+);
+
+// Watch for pending chat messages from global state (used for system gamification toasts)
+const { pendingChat, consumePendingChat } = usePendingChat();
+
+watch(
+  pendingChat,
+  (value) => {
+    if (value) {
+      const data = consumePendingChat();
+      if (data) {
+        // Send it directly to chat to trigger AI celebration
+        chat.sendMessage({ text: data.text });
+      }
+    }
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
-  const queryMessage = route.query.q as string;
-  if (queryMessage) {
-    chat.sendMessage({ text: queryMessage });
-    // Limpiamos la query para evitar re-envíos al recargar
-    router.replace({ query: {} });
-  } else if (data.value?.messages.length === 1) {
+  if (data.value?.messages.length === 1 && !route.query.q) {
     chat.regenerate();
   }
 });

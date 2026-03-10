@@ -55,6 +55,14 @@ const profileController = useProfileController();
 const supabase = useSupabaseClient();
 const { $pwa } = useNuxtApp();
 const { isOnline, pendingOperations } = useOfflineSync();
+const inboxController = useInboxController();
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    inboxController.fetchInboxActions();
+    inboxController.setupRealtime();
+  }
+});
 
 const items = computed<DropdownMenuItem[][]>(() => {
   const dropdownItems: DropdownMenuItem[][] = [
@@ -177,7 +185,12 @@ const items = computed<DropdownMenuItem[][]>(() => {
           @click="emit('openInbox')"
           aria-label="Inbox"
         />
-        <!-- TODO: Badge with pending count from Realtime subscription -->
+        <span
+          v-if="inboxController.unreadCount.value > 0"
+          class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-blue-600 rounded-full pointer-events-none"
+        >
+          {{ inboxController.unreadCount.value }}
+        </span>
       </div>
 
       <div

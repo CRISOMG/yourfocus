@@ -309,13 +309,9 @@
               </div>
             </div>
 
-            <!-- Chart Placeholder -->
-            <UCard class="flex-1 flex flex-col items-center justify-center p-8 text-center border-dashed bg-transparent shadow-none" :ui="{ body: { base: 'flex flex-col items-center justify-center h-full' } }">
-              <UIcon name="i-lucide-radar" class="w-16 h-16 opacity-30 mb-4" />
-              <p class="font-medium text-lg opacity-80">Configuración del Radar Chart</p>
-              <p class="text-xs opacity-60 mt-2 max-w-xs mx-auto">
-                El gráfico de radar requiere la instalación de una librería como Chart.js (vue-chartjs) para renderizarse.
-              </p>
+            <!-- Chart Component -->
+            <UCard class="flex-1 flex flex-col p-4 border-dashed bg-transparent shadow-none" :ui="{ body: { base: 'flex flex-col items-center justify-center w-full h-full' } }">
+              <KpiRadarChart :mode="kpiViewMode" />
             </UCard>
           </div>
         </template>

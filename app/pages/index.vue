@@ -338,6 +338,16 @@ const openSpecialOfferModal = useState("openSpecialOfferModal", () => false);
 const route = useRoute();
 const router = useRouter();
 
+watch(
+  () => route.query.q,
+  (newQ) => {
+    if (newQ) {
+      openChatDrawer.value = true;
+    }
+  },
+  { immediate: true },
+);
+
 watch(profileController.profile, () => {
   if (!profileController.profile.value?.has_password) {
     openPasswordSetupModal.value = true;

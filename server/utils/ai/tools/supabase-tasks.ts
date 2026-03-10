@@ -314,9 +314,110 @@ NOTA: Si se especifican etiquetas, se REEMPLAZAN todas las etiquetas existentes.
     },
   });
 
+  const atomizeTaskTool = tool({
+    description: `Herramienta TDAH-First para insertar el desglose de una tarea grande en varios pomodoros/subtareas accionables.
+Usala ÚNICAMENTE DESPUÉS de haber propuesto al usuario el desglose (normalmente 3 tareas con verbos de acción clara) y que el usuario te haya CONFIRMADO que las guardes.`,
+    inputSchema: z.object({
+      originalTaskId: z.string().uuid().optional().describe("ID de la tarea original (si existe) para marcarla como hecha o ligarla."),
+      subtasks: z
+        .array(
+          z.object({
+            title: z.string().max(200).describe("Título accionable de la subtarea (ej: 'Escribir primer borrador')"),
+            description: z.string().optional().describe("Contexto breve"),
+            tagLabels: z.array(z.string()).optional().describe("Etiquetas relevantes para la tarea (se buscan o crean)")
+          })
+        )
+        .describe("Array de subtareas a insertar en masa"),
+    }),
+    execute: async ({ originalTaskId, subtasks }) => {
+      try {
+        const createdTasks = [];
+
+        for (const subtask of subtasks) {
+          const finalTagIds: number[] = [];
+
+          if (subtask.tagLabels && subtask.tagLabels.length > 0) {
+            for (const label of subtask.tagLabels) {
+              const normalized = label.trim().toLowerCase();
+              if (!normalized) continue;
+
+              const { data: existingTag } = await supabase
+                .from("tags")
+                .select("id")
+                .or(`user_id.eq.${userId},user_id.is.null`)
+                .eq("label", normalized)
+                .maybeSingle();
+
+              if (existingTag) {
+                if (!finalTagIds.includes(existingTag.id)) {
+                  finalTagIds.push(existingTag.id);
+                }
+              } else {
+                const { data: newTag, error: tagError } = await supabase
+                  .from("tags")
+                  .insert({ label: normalized, user_id: userId })
+                  .select("id")
+                  .single();
+
+                if (!tagError && newTag) {
+                  finalTagIds.push(newTag.id);
+                }
+              }
+            }
+          }
+
+          const { data, error } = await supabase
+            .from("tasks")
+            .insert({
+              user_id: userId,
+              title: subtask.title,
+              description: subtask.description || null,
+              done: false,
+              archived: false,
+              tag_id: finalTagIds.length > 0 ? finalTagIds[0] : null,
+              estimated_pomodoros: 1, // Defaulting to 1 pomodoro logic per atomic task
+            })
+            .select("id, title, description, tag_id, created_at")
+            .single();
+
+          if (error) throw error;
+
+          if (finalTagIds.length > 0 && data) {
+            const taskTagRows = finalTagIds.map((tagId) => ({
+              task: data.id,
+              tag: tagId,
+              user_id: userId,
+            }));
+            await supabase.from("tasks_tags").insert(taskTagRows);
+          }
+
+          createdTasks.push({ task: data, tags: finalTagIds });
+        }
+
+        // Optional: mark original task as completed automatically? 
+        // We'll leave it pending for the user unless it's explicitly asked, but we can do it if originalTaskId is provided.
+        if (originalTaskId) {
+           await supabase.from("tasks").update({ done: true, archived: true }).eq("id", originalTaskId);
+        }
+
+        return {
+          success: true,
+          message: `Se crearon ${subtasks.length} subtareas atómicas correctamente.${originalTaskId ? " La tarea original fue archivada." : ""}`,
+          tasks: createdTasks,
+        };
+      } catch (error: unknown) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    },
+  });
+
   return {
     getTasks: getTasksTool,
     createTask: createTaskTool,
     updateTask: updateTaskTool,
+    atomizeTask: atomizeTaskTool,
   };
 }

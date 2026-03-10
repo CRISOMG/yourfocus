@@ -11,13 +11,13 @@
 | Campo                    | Valor                                                                |
 | ------------------------ | -------------------------------------------------------------------- |
 | **Feature / Módulo**     | Tag-Based OKRs — Motor del 1% (Kaizen Engine)                        |
-| **Estado**               | `Draft`                                                              |
+| **Estado**               | `Implementation`                                                     |
 | **Owner**                | Cris (TPM / TPE)                                                     |
 | **Dominio (DDD)**        | Gestión de Objetivos / Métricas de Productividad / Intervención TDAH |
 | **Módulo (Bounded Ctx)** | Gestión de Objetivos                                                 |
 | **Fecha de creación**    | 2026-03-05                                                           |
-| **Última actualización** | 2026-03-05                                                           |
-| **Sprint / Ciclo**       | Pendiente de planificación                                           |
+| **Última actualización** | 2026-03-09                                                           |
+| **Sprint / Ciclo**       | Sprint 1: Motor Kaizen                                               |
 
 ---
 
@@ -364,7 +364,7 @@ CREATE POLICY "Users can manage own inbox actions" ON "public"."inbox_actions"
 
 > **Comportamiento de re-ejecución:** Cuando el usuario ejecuta una `inbox_action` con `action_type`, se marca `status='completed'` y `execution_count++`. La acción permanece visible en el Inbox y puede re-ejecutarse previa confirmación del usuario.
 
-#### Diagrama de Relaciones
+#### Diagrama de Relaciones (Evolucionado)
 
 ```mermaid
 erDiagram
@@ -374,8 +374,20 @@ erDiagram
     tags ||--o{ tasks_tags : "etiqueta"
     tags ||--o{ pomodoros_tags : "etiqueta"
     inbox_actions }o--|| profiles : "pertenece a"
-    tasks ||--o{ pomodoros : "ejecuta"
+    pomodoros }|--|| tasks : "deducción temporal/tags"
 ```
+
+> **Nota Arquitectónica:** Se depreca el uso de la tabla física `pomodoros_tasks`. La relación ahora es dinámica. Un pomodoro pertenece a una tarea si comparten tags y la tarea se completó en un rango de tiempo cercano al pomodoro.
+
+### Diseño de Interacción: AI Atomizer como Tool
+
+La funcionalidad de atomización no es un modal estático, sino una herramienta del agente IA.
+
+1. **Trigger:** El usuario pulsa en una `inbox_action` de tipo `AI_ATOMIZE`.
+2. **Dispatcher:** Envía un mensaje automático al chat: `"Atomiza esta tarea grande: [Título]"`.
+3. **Tool Call:** El agente detecta la intención y llama a `atomize_task({ task_string })`.
+4. **Outcome:** El agente propone 3 subtareas en el chat; el usuario las confirma y la IA las inserta vía SQL.
+
 
 ### Ontología de Métricas — Cualidades Humanas Cuantificadas
 

@@ -560,7 +560,7 @@ CREATE TABLE IF NOT EXISTS "public"."inbox_actions" (
     "title" text NOT NULL,
     "description" text,
     "action_type" text DEFAULT 'NONE'
-        CHECK (action_type IN ('NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE')),
+        CHECK (action_type IN ('NONE', 'CREATE_TASK', 'REVIEW_NOTE', 'CREATE_LOG', 'AI_ATOMIZE', 'OKR_PROGRESS')),
     "action_payload" jsonb DEFAULT '{}',
     "status" text DEFAULT 'pending'
         CHECK (status IN ('pending', 'completed', 'dismissed')),

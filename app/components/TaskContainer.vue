@@ -322,6 +322,7 @@
     <!-- #endregion Kanban Board -->
 
     <ManageTagsModal
+      multiple
       v-model:open="manageTagModal"
       v-model:selected-item="modalSelectedTask.tag"
       @update:selected-item="
