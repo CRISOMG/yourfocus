@@ -1,5 +1,3 @@
-import { useAuthStore } from "~/stores/auth";
-
 export interface InboxAction {
   id: string;
   title: string;
@@ -47,7 +45,7 @@ export const actionTypeMeta: Record<
 
 export function useInboxController() {
   const supabase = useSupabaseClient();
-  const authStore = useAuthStore();
+  const user = useSupabaseUser();
   const toast = useToast();
 
   const inboxActions = useState<InboxAction[]>("inbox-actions-list", () => []);
@@ -68,13 +66,14 @@ export function useInboxController() {
   );
 
   async function fetchInboxActions() {
-    if (!authStore.user?.id) return;
+    const userId = user.value?.id || user.value?.sub;
+    if (!userId) return;
     loading.value = true;
     try {
       const { data, error } = await supabase
         .from("inbox_actions")
         .select("*")
-        .eq("user_id", authStore.user.id)
+        .eq("user_id", userId)
         .in("status", ["pending", "completed"])
         .order("priority", { ascending: false })
         .order("created_at", { ascending: false })
@@ -90,7 +89,8 @@ export function useInboxController() {
   }
 
   function setupRealtime() {
-    if (!authStore.user?.id) return;
+    const userId = user.value?.id || user.value?.sub;
+    if (!userId) return;
     const channel = supabase
       .channel("public:inbox_actions")
       .on(
@@ -99,7 +99,7 @@ export function useInboxController() {
           event: "*",
           schema: "public",
           table: "inbox_actions",
-          filter: `user_id=eq.${authStore.user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
           // Detect INSERT specifically for OKR_PROGRESS
@@ -112,15 +112,19 @@ export function useInboxController() {
                 description: newAction.description || undefined,
                 color: "success",
                 icon: "i-lucide-award",
-                actions: [{
-                  label: "Ver KPIs",
-                  onClick: () => { useRouter().push({ path: "/", hash: "#kpis" }); } // Placeholder routing
-                }]
+                actions: [
+                  {
+                    label: "Ver KPIs",
+                    onClick: () => {
+                      useRouter().push({ path: "/", hash: "#kpis" });
+                    }, // Placeholder routing
+                  },
+                ],
               });
-              
+
               // Also send system text to the chat container via pendingChat
               setPendingChat({
-                text: `He ganado +${diff}% de progreso en ${newAction.title.replace('Progreso OKR: ', '')}. Acompañame a celebrarlo! 🎉`,
+                text: `He ganado +${diff}% de progreso en ${newAction.title.replace("Progreso OKR: ", "")}. Acompañame a celebrarlo! 🎉`,
               });
 
               // Mark as completed instantly since it's just a notification hook
@@ -197,12 +201,24 @@ export function useInboxController() {
 
     switch (action.action_type) {
       case "CREATE_TASK":
+        // Trigger modal via shared state.
+        const pendingTemplateIdState = useState<string | undefined>(
+          "inbox-pending-template",
+          () => undefined,
+        );
+        const modalOpenState = useState<boolean>(
+          "inbox-create-task-modal-open",
+          () => false,
+        );
+
+        pendingTemplateIdState.value = payload.template_id;
+        modalOpenState.value = true;
+
         toast.add({
           title: "Crear tarea",
           description: payload.title || action.title,
           color: "info",
         });
-        // TODO: Open TASK_FORM modal via layout modals
         break;
       case "REVIEW_NOTE":
         toast.add({

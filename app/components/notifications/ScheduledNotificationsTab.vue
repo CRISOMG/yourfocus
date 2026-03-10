@@ -3,14 +3,64 @@ import { ref, computed, watchEffect } from "vue";
 import * as J from "~~/shared/utils/v2/jornada";
 import { useSupabaseClient } from "#imports";
 import { useAuthStore } from "~/stores/auth";
+import { useTaskTemplatesController } from "~/composables/task/use-task-templates";
 
 const supabase = useSupabaseClient();
 const authStore = useAuthStore();
 const toast = useToast();
+const templatesController = useTaskTemplatesController();
+
+onMounted(() => {
+  templatesController.loadTemplates();
+});
 
 // Placeholder for logic
 const scheduledNotifications = ref<any[]>([]);
 const isCreating = ref(false);
+const editingId = ref<string | null>(null);
+
+function resetForm() {
+  customTitle.value = "";
+  customBody.value = "";
+  customTime.value = "09:00";
+  customSelectedDays.value = [];
+  selectedActionType.value = "NONE";
+  targetTemplateId.value = undefined;
+  editingId.value = null;
+  mode.value = "jornada";
+}
+
+function handleEdit(notification: any) {
+  resetForm();
+  isCreating.value = true;
+  editingId.value = notification.id;
+  
+  mode.value = "custom";
+  customTitle.value = notification.payload_override?.title || "";
+  customBody.value = notification.payload_override?.body || "";
+  selectedActionType.value = notification.action_type || "NONE";
+  targetTemplateId.value = notification.payload_override?.template_id;
+  
+  const dateObj = new Date(notification.scheduled_at);
+  const hours = dateObj.getHours().toString().padStart(2, "0");
+  const minutes = dateObj.getMinutes().toString().padStart(2, "0");
+  customTime.value = `${hours}:${minutes}`;
+  
+  if (!notification.rrule) {
+    selectedFrequency.value = "once";
+  } else if (notification.rrule.includes("FREQ=DAILY")) {
+    selectedFrequency.value = "daily";
+  } else if (notification.rrule.includes("FREQ=WEEKLY")) {
+    selectedFrequency.value = "weekly";
+    const bydayMatch = notification.rrule.match(/BYDAY=([^;]+)/);
+    if (bydayMatch) {
+      customSelectedDays.value = bydayMatch[1].split(",");
+    }
+  } else if (notification.rrule.includes("FREQ=MONTHLY")) {
+    selectedFrequency.value = "monthly";
+  }
+}
+
 
 const { data: notificationsData, refresh: fetchNotifications } =
   await useAsyncData(
@@ -54,6 +104,14 @@ const customTime = ref("09:00");
 const customSelectedDays = ref<string[]>([]);
 const customTitle = ref("");
 const customBody = ref("");
+const targetTemplateId = ref<string | undefined>(undefined);
+
+const templatesSelectables = computed(() => {
+  return templatesController.templates.value.map((template) => ({
+    label: template.title,
+    value: template.id,
+  }));
+});
 
 // Action type for inbox integration
 const actionTypeOptions = [
@@ -149,21 +207,23 @@ async function handleCreate() {
         }
       }
 
-      const { data, error } = await supabase
-        .from("scheduled_notifications")
-        .insert({
-          user_id: authStore.user?.id,
-          rrule: preset.rrule,
-          payload_override: preset.payload,
-          scheduled_at: scheduledAt.toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          status: "active",
-          action_type: selectedActionType.value,
-        })
-        .select()
-        .single();
+      const payloadObj = {
+        user_id: authStore.user?.id,
+        rrule: preset.rrule,
+        payload_override: preset.payload,
+        scheduled_at: scheduledAt.toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        status: "active",
+        action_type: selectedActionType.value,
+      };
 
-      if (error) throw error;
+      if (editingId.value) {
+        const { error } = await supabase.from("scheduled_notifications").update(payloadObj).eq("id", editingId.value);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("scheduled_notifications").insert(payloadObj);
+        if (error) throw error;
+      }
 
       toast.add({
         title: "Recordatorio creado",
@@ -193,7 +253,9 @@ async function handleCreate() {
       return;
     }
 
-    const [hours, minutes] = customTime.value.split(":").map(Number);
+    const timeParts = customTime.value.split(":");
+    const hours = Number(timeParts[0]) || 0;
+    const minutes = Number(timeParts[1]) || 0;
     const now = new Date();
     let computedScheduledAt = new Date(now);
     computedScheduledAt.setHours(hours, minutes, 0, 0);
@@ -260,24 +322,27 @@ async function handleCreate() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from("scheduled_notifications")
-        .insert({
-          user_id: authStore.user?.id,
-          rrule: rrule,
-          payload_override: {
-            title: customTitle.value,
-            body: customBody.value || "",
-          },
-          scheduled_at: computedScheduledAt.toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          status: "active",
-          action_type: selectedActionType.value,
-        })
-        .select()
-        .single();
+      const payloadObj = {
+        user_id: authStore.user?.id,
+        rrule: rrule,
+        payload_override: {
+          title: customTitle.value,
+          body: customBody.value || "",
+          template_id: selectedActionType.value === 'CREATE_TASK' ? targetTemplateId.value : undefined
+        },
+        scheduled_at: computedScheduledAt.toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        status: "active",
+        action_type: selectedActionType.value,
+      };
 
-      if (error) throw error;
+      if (editingId.value) {
+        const { error } = await supabase.from("scheduled_notifications").update(payloadObj).eq("id", editingId.value);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("scheduled_notifications").insert(payloadObj);
+        if (error) throw error;
+      }
 
       toast.add({
         title: "Recordatorio creado",
@@ -285,12 +350,7 @@ async function handleCreate() {
         color: "success",
       });
 
-      // Limpiar y resetear el form
-      customTitle.value = "";
-      customBody.value = "";
-      customTime.value = "09:00";
-      customSelectedDays.value = [];
-      selectedActionType.value = "NONE";
+      resetForm();
 
       await fetchNotifications();
     } catch (err: any) {
@@ -343,7 +403,7 @@ async function handleDelete(id: string) {
       <UButton
         color="primary"
         icon="i-lucide-plus"
-        @click="isCreating = !isCreating"
+        @click="() => { isCreating = !isCreating; if (!isCreating) resetForm(); }"
       >
         Crear
       </UButton>
@@ -456,6 +516,24 @@ async function handleDelete(id: string) {
               class="w-full"
             />
           </UFormField>
+          
+          <UFormField v-if="selectedActionType === 'CREATE_TASK'" label="Plantilla de Tarea (Opcional)" class="mt-4">
+            <USelectMenu
+              v-model="targetTemplateId"
+              :items="templatesSelectables"
+              value-key="value"
+              placeholder="Seleccionar plantilla..."
+              class="w-full"
+              searchable
+            >
+              <template #empty>
+                <div class="p-2 text-sm text-neutral-500">No hay plantillas creadas.</div>
+              </template>
+            </USelectMenu>
+            <p class="text-xs text-neutral-500 mt-1">
+              Si seleccionas una plantilla, se pre-llenará cuando abras la notificación.
+            </p>
+          </UFormField>
 
           <p class="text-xs text-neutral-500 mt-2">
             El sistema construirá de forma inteligente la regla de recurrencia
@@ -464,10 +542,10 @@ async function handleDelete(id: string) {
         </div>
 
         <div class="flex justify-end gap-2 mt-4">
-          <UButton variant="ghost" color="neutral" @click="isCreating = false"
+          <UButton variant="ghost" color="neutral" @click="() => { isCreating = false; resetForm(); }"
             >Cancelar</UButton
           >
-          <UButton color="primary" @click="handleCreate">Guardar</UButton>
+          <UButton color="primary" @click="handleCreate">{{ editingId ? 'Guardar cambios' : 'Guardar' }}</UButton>
         </div>
       </div>
     </UCard>
@@ -538,6 +616,12 @@ async function handleDelete(id: string) {
           <div
             class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
           >
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-pencil"
+              @click="handleEdit(notification)"
+            />
             <UButton
               color="neutral"
               variant="ghost"

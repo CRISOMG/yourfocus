@@ -339,11 +339,6 @@
     />
 
     <TaskTemplatesManagerModal v-model:open="isManageTemplatesModalOpen" />
-
-    <CreateTaskFromTemplateModal
-      v-model:open="isCreateFromTemplateModalOpen"
-      @task-created="taskController.loadTasks()"
-    />
   </div>
 </template>
 
@@ -615,7 +610,10 @@ const createTaskModal = ref(false);
 const manageTagModal = ref(false);
 
 const isManageTemplatesModalOpen = ref(false);
-const isCreateFromTemplateModalOpen = ref(false);
+const isCreateFromTemplateModalOpen = useState<boolean>(
+  "inbox-create-task-modal-open",
+  () => false,
+);
 
 onMounted(() => {
   tagController.loadUserTags();

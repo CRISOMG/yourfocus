@@ -37,5 +37,12 @@ export type TagUpdate = Prettify<
 
 // ─── Enum Types ─────────────────────────────────────────────
 export type TaskStage = Database["public"]["Enums"]["task_stage"];
+export const TaskStage = {
+  BACKLOG: "backlog",
+  TO_DO: "to_do",
+  IN_PROGRESS: "in_progress",
+  DONE: "done",
+  ARCHIVED: "archived",
+} as const;
 export type PomodoroType = Database["public"]["Enums"]["pomodoro_type"];
 export type PomodoroState = Database["public"]["Enums"]["pomodoro_state"];

@@ -72,6 +72,7 @@ import {
   type TTaskTemplate,
 } from "~/composables/task/use-task-templates";
 import { useTaskController } from "~/composables/task/use-task-controller";
+import { TaskStage } from "~/types/tables";
 
 const emit = defineEmits<{
   (e: "task-created"): void;
@@ -96,11 +97,26 @@ const templatesSelectables = computed(() => {
 });
 
 // Watchers
-watch(isOpen, (newVal) => {
+watch(isOpen, async (newVal) => {
   if (newVal) {
-    templatesController.loadTemplates();
+    await templatesController.loadTemplates();
     selectedTemplate.value = undefined;
     overrideTitle.value = "";
+
+    // Check if there is a pending template from the inbox dispatcher
+    const pendingTemplateIdState = useState<string | undefined>(
+      "inbox-pending-template",
+    );
+    if (pendingTemplateIdState.value) {
+      const template = templatesController.templates.value.find(
+        (t) => t.id === pendingTemplateIdState.value,
+      );
+      if (template) {
+        selectedTemplate.value = template;
+      }
+      // Reset after consumption
+      pendingTemplateIdState.value = undefined;
+    }
   }
 });
 
@@ -118,7 +134,12 @@ async function handleCreate() {
   // Utilize the existing handleCreateTask. Note: The multi-tag support on frontend `createTask` might not be fully implemented yet,
   // but we pass the first tag for now (which is consistent with existing handleCreateTask logic).
   // Modifying the `tasks_tags` table directly could be handled in a backend refactor, but for now we follow the existing signature.
-  await taskController.handleCreateTask(title, description, firstTagId);
+  await taskController.handleCreateTask(
+    title,
+    description,
+    firstTagId,
+    TaskStage.IN_PROGRESS,
+  );
 
   // If the template had multiple tags, we'd ideally sync tasks_tags here.
   // For simplicity and matching current handleCreateTask signature, we assign the primary tag.

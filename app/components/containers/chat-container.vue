@@ -419,11 +419,11 @@ watch(
 );
 
 watch(
-  () => route.query.q,
-  (newQ) => {
-    if (newQ && typeof newQ === "string") {
-      chat.sendMessage({ text: String(newQ) });
-      router.replace({ query: { ...route.query, q: undefined } });
+  () => route.query.chat_q,
+  (newChatQ) => {
+    if (newChatQ && typeof newChatQ === "string") {
+      chat.sendMessage({ text: String(newChatQ) });
+      router.replace({ query: { ...route.query, chat_q: undefined } });
     }
   },
   { immediate: true },
@@ -447,7 +447,7 @@ watch(
 );
 
 onMounted(() => {
-  if (data.value?.messages.length === 1 && !route.query.q) {
+  if (data.value?.messages.length === 1 && !route.query.chat_q) {
     chat.regenerate();
   }
 });

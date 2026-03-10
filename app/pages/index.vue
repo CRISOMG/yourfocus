@@ -339,9 +339,9 @@ const route = useRoute();
 const router = useRouter();
 
 watch(
-  () => route.query.q,
-  (newQ) => {
-    if (newQ) {
+  () => route.query.chat_q,
+  (newChatQ) => {
+    if (newChatQ) {
       openChatDrawer.value = true;
     }
   },

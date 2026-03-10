@@ -16,7 +16,7 @@ const pushNotifications = usePushNotifications();
 const subscriptions = ref<
   Array<{
     id: string;
-    device_info: string | null;
+    device_info: any;
     created_at: string | null;
   }>
 >([]);
@@ -58,9 +58,44 @@ async function subscribeDevice() {
   }
 }
 
+const testingPush = ref(false);
+async function testPushNotification(mockCreateTask: boolean = false) {
+  if (!user.value) return;
+  testingPush.value = true;
+  try {
+    await $fetch("/api/push/test", {
+      method: "POST",
+      body: {
+        mockCreateTask,
+        notification: {
+          title: mockCreateTask ? "Toca para abrir plantilla" : "¡Prueba Exitosa! 🎉",
+          body: mockCreateTask ? "Simulando acción de crear tarea" : "Las notificaciones push están configuradas y llegando perfectamente a tu dispositivo.",
+          url: "/",
+        },
+      },
+    });
+
+    useToast().add({
+      title: "Prueba enviada",
+      description: "La notificación debería llegar en breve.",
+      color: "success",
+    });
+  } catch (e: any) {
+    console.error("Error testing push:", e);
+    useToast().add({
+      title: "Error al probar",
+      description: e.message || "No se pudo enviar la prueba.",
+      color: "error",
+    });
+  } finally {
+    testingPush.value = false;
+  }
+}
+
 // Format device info for display
-function formatDevice(deviceInfo: string | null): string {
-  if (!deviceInfo) return "Dispositivo desconocido";
+function formatDevice(deviceInfoRaw: any): string {
+  if (!deviceInfoRaw) return "Dispositivo desconocido";
+  const deviceInfo = String(deviceInfoRaw);
   if (deviceInfo.includes("Mobile")) return "📱 Móvil";
   if (deviceInfo.includes("Android")) return "📱 Android";
   if (deviceInfo.includes("iPhone") || deviceInfo.includes("iPad"))
@@ -115,7 +150,7 @@ watch(open, (isOpen) => {
               configuración del navegador.
             </div>
 
-            <!-- Subscribe button -->
+            <!-- Subscribe/Test buttons -->
             <div v-else class="flex items-center justify-between">
               <div>
                 <p class="font-medium">Este dispositivo</p>
@@ -127,15 +162,38 @@ watch(open, (isOpen) => {
                   }}
                 </p>
               </div>
-              <UButton
-                v-if="!pushNotifications.isSubscribed.value"
-                @click="subscribeDevice"
-                :loading="pushNotifications.isLoading.value"
-                icon="i-lucide-bell"
-                color="primary"
-              >
-                Activar
-              </UButton>
+              <div class="flex items-center gap-2">
+                <UButton
+                  v-if="pushNotifications.isSubscribed.value"
+                  @click="testPushNotification(true)"
+                  :loading="testingPush"
+                  icon="i-lucide-list-todo"
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                >
+                  Probar Tarea
+                </UButton>
+                <UButton
+                  v-if="pushNotifications.isSubscribed.value"
+                  @click="testPushNotification(false)"
+                  :loading="testingPush"
+                  icon="i-lucide-flask-conical"
+                  color="neutral"
+                  variant="soft"
+                >
+                  Probar
+                </UButton>
+                <UButton
+                  v-if="!pushNotifications.isSubscribed.value"
+                  @click="subscribeDevice"
+                  :loading="pushNotifications.isLoading.value"
+                  icon="i-lucide-bell"
+                  color="primary"
+                >
+                  Activar
+                </UButton>
+              </div>
             </div>
 
             <USeparator />

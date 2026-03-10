@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/auth";
-import { actionTypeMeta, useInboxController, type InboxAction } from "~/composables/inbox/use-inbox-controller";
+import {
+  actionTypeMeta,
+  useInboxController,
+  type InboxAction,
+} from "~/composables/inbox/use-inbox-controller";
 
 const open = defineModel<boolean>({ default: false });
 
@@ -13,7 +17,7 @@ const {
   fetchInboxActions,
   markAsCompleted,
   dismissAction,
-  dispatchAction
+  dispatchAction,
 } = useInboxController();
 
 const confirmingReExecution = ref<string | null>(null);
@@ -34,6 +38,7 @@ async function executeAction(action: InboxAction) {
     return;
   }
 
+  debugger;
   // Dispatch the action
   dispatchAction(action);
 
@@ -69,11 +74,7 @@ watch(open, (isOpen) => {
 </script>
 
 <template>
-  <UModal
-    v-model:open="open"
-    title="Inbox"
-    :ui="{ content: 'sm:max-w-lg' }"
-  >
+  <UModal v-model:open="open" title="Inbox" :ui="{ content: 'sm:max-w-lg' }">
     <template #body>
       <div class="space-y-4">
         <!-- Loading -->
@@ -183,7 +184,9 @@ watch(open, (isOpen) => {
             </div>
           </div>
 
-          <USeparator v-if="completedActions.length > 0 && pendingActions.length > 0" />
+          <USeparator
+            v-if="completedActions.length > 0 && pendingActions.length > 0"
+          />
 
           <!-- Completed actions (re-executable) -->
           <div v-if="completedActions.length > 0">
@@ -201,10 +204,7 @@ watch(open, (isOpen) => {
                 <div
                   class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-800"
                 >
-                  <UIcon
-                    name="i-lucide-check-circle"
-                    class="text-green-500"
-                  />
+                  <UIcon name="i-lucide-check-circle" class="text-green-500" />
                 </div>
 
                 <div class="flex-1 min-w-0">
@@ -215,7 +215,9 @@ watch(open, (isOpen) => {
                   </p>
                   <div class="flex items-center gap-2 mt-1">
                     <span class="text-xs text-neutral-400">
-                      {{ formatTimeAgo(action.completed_at || action.created_at) }}
+                      {{
+                        formatTimeAgo(action.completed_at || action.created_at)
+                      }}
                     </span>
                     <span
                       v-if="action.execution_count > 1"

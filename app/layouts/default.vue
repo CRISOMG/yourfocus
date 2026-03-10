@@ -13,6 +13,11 @@ const openOfflineQueueModal = ref(false);
 const openInboxModal = ref(false);
 
 // Provide modal controls to child pages/components
+import { useTaskController } from "~/composables/task/use-task-controller";
+
+const isCreateFromTemplateModalOpen = useState<boolean>("inbox-create-task-modal-open", () => false);
+const taskController = useTaskController();
+
 provideLayoutModals({
   openNotes: () => {
     openNotesModal.value = true;
@@ -50,13 +55,38 @@ provideLayoutModals({
 const route = useRoute();
 const router = useRouter();
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.inbox === "open") {
     openInboxModal.value = true;
-    // Clean up query params to avoid re-triggering on navigation
     router.replace({
-      query: { ...route.query, inbox: undefined, action_id: undefined },
+      query: { ...route.query, inbox: undefined },
     });
+  }
+
+  if (route.query.action_id) {
+    const actionId = route.query.action_id as string;
+    
+    // Clean up query param immediately to avoid double execution on refresh
+    router.replace({
+      query: { ...route.query, action_id: undefined },
+    });
+
+    try {
+      const supabase = useSupabaseClient();
+      const { data, error } = await supabase
+        .from("inbox_actions")
+        .select("*")
+        .eq("id", actionId)
+        .single();
+        
+      if (!error && data) {
+        const { dispatchAction, markAsCompleted } = useInboxController();
+        dispatchAction(data as any);
+        await markAsCompleted(data as any);
+      }
+    } catch (e) {
+      console.error("Error auto-dispatching inbox action:", e);
+    }
   }
 });
 
@@ -67,8 +97,37 @@ watch(
     if (val === "open") {
       openInboxModal.value = true;
       router.replace({
-        query: { ...route.query, inbox: undefined, action_id: undefined },
+        query: { ...route.query, inbox: undefined },
       });
+    }
+  },
+);
+
+watch(
+  () => route.query.action_id,
+  async (val) => {
+    if (val) {
+      const actionId = val as string;
+      router.replace({
+        query: { ...route.query, action_id: undefined },
+      });
+
+      try {
+        const supabase = useSupabaseClient();
+        const { data, error } = await supabase
+          .from("inbox_actions")
+          .select("*")
+          .eq("id", actionId)
+          .single();
+          
+        if (!error && data) {
+          const { dispatchAction, markAsCompleted } = useInboxController();
+          dispatchAction(data as any);
+          await markAsCompleted(data as any);
+        }
+      } catch (e) {
+        console.error("Error auto-dispatching inbox action from route change:", e);
+      }
     }
   },
 );
@@ -107,5 +166,9 @@ watch(
     <InstallAppModal v-model="openInstallAppModal" />
     <OfflineQueueModal v-model="openOfflineQueueModal" />
     <InboxModal v-model="openInboxModal" />
+    <CreateTaskFromTemplateModal
+      v-model:open="isCreateFromTemplateModalOpen"
+      @task-created="taskController.loadTasks()"
+    />
   </UContainer>
 </template>
