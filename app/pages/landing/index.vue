@@ -131,6 +131,12 @@ onMounted(() => {
             <a href="#how">{{ t("landing.nav.how") }}</a>
             <a href="#ecosystem">{{ t("landing.nav.ecosystem") }}</a>
             <a href="#pricing">{{ t("landing.nav.pricing") }}</a>
+            <a href="https://blog.yourfocus.io" target="_blank">{{
+              t("landing.nav.blog")
+            }}</a>
+            <a href="https://shop.yourfocus.io" target="_blank">{{
+              t("landing.nav.shop")
+            }}</a>
             <button class="locale-toggle" @click="toggleLocale">
               {{ locale === "es" ? "EN" : "ES" }}
             </button>
