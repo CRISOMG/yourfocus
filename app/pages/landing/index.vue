@@ -7,6 +7,7 @@ const toast = useSuccessErrorToast();
 
 const features = computed(() => t("landing.pricing.features").split(","));
 const showSuccessModal = ref(false);
+const isOpenMobileMenu = ref(false);
 
 const route = useRoute();
 
@@ -126,7 +127,7 @@ onMounted(() => {
               <p class="font-bold">Yourfocus</p>
             </NuxtLink>
           </span>
-          <div class="nav-links">
+          <div class="nav-links desktop-only">
             <a href="#why">{{ t("landing.nav.why") }}</a>
             <a href="#how">{{ t("landing.nav.how") }}</a>
             <a href="#ecosystem">{{ t("landing.nav.ecosystem") }}</a>
@@ -140,6 +141,82 @@ onMounted(() => {
             <button class="locale-toggle" @click="toggleLocale">
               {{ locale === "es" ? "EN" : "ES" }}
             </button>
+          </div>
+
+          <div class="mobile-only">
+            <UDrawer v-model:open="isOpenMobileMenu" direction="right">
+              <UButton
+                icon="i-lucide-menu"
+                variant="ghost"
+                color="neutral"
+                size="xl"
+                class="burger-button"
+              />
+
+              <template #content>
+                <div class="mobile-drawer-content p-6">
+                  <div class="flex items-center justify-between mb-8">
+                    <span class="nav-logo">Yourfocus</span>
+                    <UButton
+                      icon="i-lucide-x"
+                      variant="ghost"
+                      color="neutral"
+                      @click="isOpenMobileMenu = false"
+                    />
+                  </div>
+
+                  <div class="flex flex-col gap-6">
+                    <a
+                      href="#why"
+                      class="mobile-nav-link"
+                      @click="isOpenMobileMenu = false"
+                      >{{ t("landing.nav.why") }}</a
+                    >
+                    <a
+                      href="#how"
+                      class="mobile-nav-link"
+                      @click="isOpenMobileMenu = false"
+                      >{{ t("landing.nav.how") }}</a
+                    >
+                    <a
+                      href="#ecosystem"
+                      class="mobile-nav-link"
+                      @click="isOpenMobileMenu = false"
+                      >{{ t("landing.nav.ecosystem") }}</a
+                    >
+                    <a
+                      href="#pricing"
+                      class="mobile-nav-link"
+                      @click="isOpenMobileMenu = false"
+                      >{{ t("landing.nav.pricing") }}</a
+                    >
+                    <a
+                      href="https://blog.yourfocus.io"
+                      target="_blank"
+                      class="mobile-nav-link"
+                      >{{ t("landing.nav.blog") }}</a
+                    >
+                    <a
+                      href="https://shop.yourfocus.io"
+                      target="_blank"
+                      class="mobile-nav-link"
+                      >{{ t("landing.nav.shop") }}</a
+                    >
+
+                    <div class="mt-8 pt-8 border-t border-white/10">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm text-landing-text-muted">{{
+                          t("landing.nav.language")
+                        }}</span>
+                        <button class="locale-toggle" @click="toggleLocale">
+                          {{ locale === "es" ? "EN" : "ES" }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </UDrawer>
           </div>
         </div>
       </nav>
@@ -1225,9 +1302,36 @@ onMounted(() => {
 }
 
 /* ===== MOBILE NAV ===== */
+.mobile-only {
+  display: none;
+}
+
+.mobile-nav-link {
+  font-family: "Fredoka", cursive;
+  font-size: 1.25rem;
+  color: var(--landing-text);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.mobile-nav-link:hover {
+  color: var(--landing-orange);
+}
+
+.mobile-drawer-content {
+  background: var(--landing-bg);
+  height: 100%;
+}
+
 @media (max-width: 640px) {
-  .nav-links a {
+  .desktop-only {
     display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .burger-button {
+    color: var(--landing-text) !important;
   }
   .hero-form,
   .pricing-form,
