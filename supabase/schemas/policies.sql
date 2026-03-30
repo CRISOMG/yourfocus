@@ -169,31 +169,17 @@ CREATE POLICY "Avatars are viewable by everyone" ON "storage"."objects" FOR SELE
 -- #region TIME_SESSIONS and FLOWS policies
 ALTER TABLE public.time_sessions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own time_sessions"
-  ON public.time_sessions FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own time_sessions"
-  ON public.time_sessions FOR INSERT
+CREATE POLICY "Users can manage own time_sessions"
+  ON public.time_sessions
+  USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own time_sessions"
-  ON public.time_sessions FOR UPDATE
-  USING (auth.uid() = user_id);
 
 ALTER TABLE public.flows ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own flows"
-  ON public.flows FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own flows"
-  ON public.flows FOR INSERT
+CREATE POLICY "Users can manage own flows"
+  ON public.flows
+  USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own flows"
-  ON public.flows FOR UPDATE
-  USING (auth.uid() = user_id);
 -- #endregion
 
 -- #region TASK_TEMPLATES policies
@@ -271,7 +257,8 @@ ALTER TABLE "public"."documents" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Service role can manage documents" ON "public"."documents" TO service_role USING (true) WITH CHECK (true);
 
 -- n8n_chat_histories
--- (No RLS needed/enabled for this internal table, or managed elsewhere)
+ALTER TABLE "public"."n8n_chat_histories" ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own chat histories" ON "public"."n8n_chat_histories" FOR ALL TO "authenticated" USING (("session_id" = (select auth.uid())::text)) WITH CHECK (("session_id" = (select auth.uid())::text));
 
 -- push_subscriptions
 ALTER TABLE "public"."push_subscriptions" ENABLE ROW LEVEL SECURITY;
@@ -295,4 +282,12 @@ CREATE POLICY "Users can manage their own scheduled notifications" ON "public"."
 -- inbox_actions
 ALTER TABLE "public"."inbox_actions" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own inbox actions" ON "public"."inbox_actions" FOR ALL TO "authenticated" USING (("user_id" = (select auth.uid()))) WITH CHECK (("user_id" = (select auth.uid())));
+-- #endregion
+
+-- #region n8n_chat_histories policies
+ALTER TABLE public.n8n_chat_histories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own chat histories"
+  ON public.n8n_chat_histories
+  USING (session_id = (auth.uid())::text)
+  WITH CHECK (session_id = (auth.uid())::text);
 -- #endregion

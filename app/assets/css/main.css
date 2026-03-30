@@ -82,6 +82,7 @@
   
   /* Background & Text Light Mode */
   --ui-bg: #F7EFC5; /* Clarity Cream */
+  --ui-bg-inverted: #252319;
   --ui-text: #1D110F; /* Dark Brown/Depth */
   
   background-color: var(--ui-bg);
@@ -94,6 +95,7 @@
   
   /* Background & Text Dark Mode */
   --ui-bg: #0D222D; /* Dark Slate */
+  --ui-bg-inverted: #252319;
   --ui-text: #F7EFC5; /* Cream for high contrast text */
   
   background-color: var(--ui-bg);
