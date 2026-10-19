@@ -253,6 +253,7 @@ async function handleDiscard() {
 }
 
 import { getAudioStoragePath } from "~~/shared/utils/jornada";
+import { convertBlobToMp3 } from "~/utils/audio-converter";
 
 const supabase = useSupabaseClient();
 
@@ -261,17 +262,18 @@ async function handleSend() {
   isUploading.value = true;
 
   try {
-    const blob = await getAudioBlob();
-    if (!blob) {
+    const rawBlob = await getAudioBlob();
+    if (!rawBlob) {
       emit("error", "No hay audio para enviar");
       return;
     }
 
-    const userId = user.value?.sub || "";
-    const extension = getFileExtension();
+    // Convert to MP3 with automatic fallback to WebM
+    const { blob, mimeType, extension } = await convertBlobToMp3(rawBlob);
+
+    const userId = (user.value as any)?.id || user.value?.sub || "";
     const fileName = `audio-${Date.now()}.${extension}`;
     const storagePath = getAudioStoragePath(userId, fileName);
-    const mimeType = blob.type || "audio/webm";
 
     // 1. Upload directly to Supabase from Client
     const { error: uploadError } = await supabase.storage

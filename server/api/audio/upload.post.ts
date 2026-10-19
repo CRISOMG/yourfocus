@@ -24,7 +24,7 @@ export default defineEventHandler(async (event): Promise<AudioUploadResult> => {
     });
   }
 
-  const userId = user.sub;
+  const userId = (user as any).id || (user as any).sub;
   const supabase = await serverSupabaseClient<Database>(event);
 
   let audioMimeType: string;

@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="scrollContainerRef"
     tabindex="0"
     class="h-[calc(100vh-6rem)] overflow-y-scroll custom-scrollbar select-text w-full p-0 sm:p-0 outline-none"
   >
@@ -84,12 +85,16 @@
                   part?.providerMetadata?.googleDrive?.webViewLink ||
                   ''
                 "
+                :storage-path="part?.providerMetadata?.supabaseStorage?.path"
               />
             </div>
             <!-- User messages are rendered as plain text (safely escaped by Vue) -->
             <UserMessage
               v-else-if="part.type === 'text' && message.role === 'user'"
               :text="part.text"
+              :can-append-response="canAppendResponse(message.id)"
+              :is-appending="appendingMap[message.id]"
+              @append-response="handleAppendAgentResponse(message.id)"
             />
             <!-- <ToolWeather
                   v-else-if="part.type === 'tool-weather'"
@@ -100,6 +105,30 @@
                   :invocation="part as ChartUIToolInvocation"
                 /> -->
           </template>
+          <div
+            v-if="
+              message.role === 'user' &&
+              !message.parts?.some((p) => p.type === 'text') &&
+              canAppendResponse(message.id)
+            "
+            class="mt-1 pt-1.5 border-t border-neutral-700/30 flex items-center justify-between gap-2"
+          >
+            <span class="text-xs text-muted flex items-center gap-1 font-mono">
+              <UIcon name="i-lucide-notebook-pen" class="size-3.5 text-amber-500" />
+              Bitácora (audio/adjunto)
+            </span>
+            <UButton
+              size="xs"
+              color="primary"
+              variant="subtle"
+              icon="i-lucide-sparkles"
+              :loading="appendingMap[message.id]"
+              :disabled="appendingMap[message.id]"
+              @click.stop="handleAppendAgentResponse(message.id)"
+            >
+              Append Agent Response
+            </UButton>
+          </div>
         </template>
 
         <template #indicator>
@@ -132,10 +161,29 @@
         </template>
       </UChatMessages>
 
+      <!-- Loading indicator en el chat al guardar nota en bitácora -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 translate-y-1"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-1"
+      >
+        <div
+          v-if="isSavingJournal"
+          class="flex items-center justify-end px-4 py-1.5 gap-2 text-xs text-muted"
+        >
+          <UIcon name="i-lucide-loader-2" class="size-3.5 animate-spin text-amber-500" />
+          <span>Guardando en bitácora...</span>
+        </div>
+      </Transition>
+
       <UChatPrompt
         v-model="input"
         :error="chat.error"
-        :disabled="isUploading"
+        :disabled="isUploading || isSavingJournal"
+        :loading="isSavingJournal"
         variant="subtle"
         class="sticky bottom-0 [view-transition-name:chat-prompt] rounded-b-none z-10"
         :ui="{ base: 'px-1.5' }"
@@ -150,6 +198,7 @@
               :type="fileWithStatus.file.type"
               :preview-url="fileWithStatus.previewUrl"
               :url="fileWithStatus.url"
+              :storage-path="fileWithStatus.driveFile?.path"
               :status="fileWithStatus.status"
               :error="fileWithStatus.error"
               removable
@@ -164,6 +213,25 @@
             <AudioRecorderButton @uploaded="handleAudioUploaded" />
           </div>
           <div class="flex items-center gap-1">
+            <!-- Dropdown Selector: Modo Agente ON vs Modo Bitácora -->
+            <UDropdownMenu
+              :items="chatConfigItems"
+              :content="{ align: 'end' }"
+              :ui="{ content: 'w-64' }"
+            >
+              <UButton
+                size="xs"
+                :color="isAgentActive ? 'primary' : 'warning'"
+                :variant="isAgentActive ? 'subtle' : 'solid'"
+                :icon="isAgentActive ? 'i-lucide-bot' : 'i-lucide-notebook-pen'"
+                class="gap-1 font-medium transition-colors"
+                title="Configuración de flujo del chat"
+              >
+                {{ isAgentActive ? "Agente ON" : "Bitácora" }}
+                <UIcon name="i-lucide-chevron-down" class="size-3 opacity-60" />
+              </UButton>
+            </UDropdownMenu>
+
             <UButton
               size="xs"
               class="w-16 flex justify-center"
@@ -176,7 +244,8 @@
 
             <UChatPromptSubmit
               :status="chat.status"
-              :disabled="isUploading"
+              :disabled="isUploading || isSavingJournal"
+              :loading="isSavingJournal"
               color="primary"
               size="sm"
               @stop="chat.stop()"
@@ -245,6 +314,19 @@ const {
   clearFiles,
 } = useFileUploadWithStatus();
 
+const scrollContainerRef = ref<HTMLElement | null>(null);
+
+function scrollToBottom(smooth = true) {
+  nextTick(() => {
+    if (scrollContainerRef.value) {
+      scrollContainerRef.value.scrollTo({
+        top: scrollContainerRef.value.scrollHeight,
+        behavior: smooth ? "smooth" : "instant",
+      });
+    }
+  });
+}
+
 const { data, refresh } = await useFetch(`/api/chat`);
 
 const input = ref("");
@@ -283,18 +365,214 @@ const chat = new Chat({
   },
 });
 
+import { useChatPreferences } from "~/composables/useChatPreferences";
+const { isAgentActive, toggleAgent } = useChatPreferences();
+
+const isSavingJournal = ref(false);
+const appendingMap = ref<Record<string, boolean>>({});
+
+const chatConfigItems = computed(() => [
+  [
+    {
+      label: isAgentActive.value
+        ? "Modo Asistente (Respuestas activas)"
+        : "Modo Bitácora (Solo notas/pensamientos)",
+      icon: isAgentActive.value ? "i-lucide-bot" : "i-lucide-notebook-pen",
+      disabled: true,
+    },
+  ],
+  [
+    {
+      label: isAgentActive.value
+        ? "Desactivar Respuestas del Agente"
+        : "Activar Respuestas del Agente",
+      icon: isAgentActive.value
+        ? "i-lucide-toggle-right"
+        : "i-lucide-toggle-left",
+      onSelect: () => {
+        toggleAgent();
+        toast.add({
+          title: isAgentActive.value
+            ? "Modo Asistente Activado"
+            : "Modo Bitácora Activado",
+          description: isAgentActive.value
+            ? "El agente responderá y analizará tus mensajes."
+            : "Tus mensajes y audios se guardarán como notas sin respuestas automáticas.",
+          icon: isAgentActive.value ? "i-lucide-bot" : "i-lucide-notebook-pen",
+          color: isAgentActive.value ? "primary" : "warning",
+        });
+      },
+    },
+  ],
+]);
+
+async function handleSaveJournal(parts: any[], text: string) {
+  try {
+    isSavingJournal.value = true;
+    const saved = await $fetch<UIMessage>("/api/chat/journal", {
+      method: "POST",
+      body: { parts, content: text },
+    });
+
+    if (saved) {
+      chat.messages.push(saved);
+      clearFiles();
+      scrollToBottom(true);
+    }
+  } catch (err: any) {
+    console.error("[Chat] Failed to save journal entry:", err);
+    toast.add({
+      title: "Error al guardar nota",
+      description: err?.message || "No se pudo registrar la entrada en la bitácora",
+      icon: "i-lucide-alert-circle",
+      color: "error",
+    });
+  } finally {
+    isSavingJournal.value = false;
+  }
+}
+
+function canAppendResponse(messageId: string): boolean {
+  if (!chat.messages) return false;
+  const idx = chat.messages.findIndex((m) => m.id === messageId);
+  if (idx === -1) return false;
+  const msg = chat.messages[idx];
+  if (msg.role !== "user") return false;
+
+  // 1. Hay alguna respuesta del asistente que referencie explícitamente a este mensaje?
+  const hasExplicit = chat.messages.some(
+    (m) => m.role === "assistant" && (m as any).replyToId === messageId,
+  );
+  if (hasExplicit) return false;
+
+  // 2. El mensaje siguiente es un asistente que NO sea respuesta a otro mensaje?
+  const next = chat.messages[idx + 1];
+  if (next && next.role === "assistant" && !(next as any).replyToId) {
+    return false;
+  }
+
+  return true;
+}
+
+async function handleAppendAgentResponse(messageId: string) {
+  const targetIdx = chat.messages.findIndex((m) => m.id === messageId);
+  if (targetIdx === -1) return;
+
+  appendingMap.value[messageId] = true;
+
+  // Tomar contexto histórico hasta este mensaje
+  const contextMessages = chat.messages.slice(0, targetIdx + 1);
+
+  // Crear placeholder visual justo debajo del mensaje seleccionado
+  const tempId = `temp-reply-${Date.now()}`;
+  const tempAssistant: UIMessage & { replyToId?: string } = {
+    id: tempId,
+    role: "assistant",
+    content: "",
+    parts: [{ type: "text", text: "" }],
+    createdAt: new Date(),
+    replyToId: messageId,
+  };
+
+  chat.messages.splice(targetIdx + 1, 0, tempAssistant);
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: contextMessages,
+        replyToMessageId: messageId,
+        usePro: isPro.value,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      throw new Error(`Chat API error: ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let accumulatedText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === "data: [DONE]") continue;
+
+        let jsonStr = "";
+        if (trimmed.startsWith("data: ")) {
+          jsonStr = trimmed.slice(6);
+        } else if (trimmed.startsWith("data:")) {
+          jsonStr = trimmed.slice(5);
+        } else if (trimmed.startsWith("0:")) {
+          jsonStr = trimmed.slice(2);
+        }
+
+        if (jsonStr) {
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const piece =
+              typeof parsed === "string"
+                ? parsed
+                : parsed?.delta || parsed?.text || "";
+            if (piece) {
+              accumulatedText += piece;
+              tempAssistant.content = accumulatedText;
+              tempAssistant.parts = [{ type: "text", text: accumulatedText }];
+              scrollToBottom(true);
+            }
+          } catch {
+            if (!trimmed.startsWith("data:")) {
+              accumulatedText += trimmed;
+              tempAssistant.content = accumulatedText;
+              tempAssistant.parts = [{ type: "text", text: accumulatedText }];
+              scrollToBottom(true);
+            }
+          }
+        }
+      }
+    }
+
+    // Permitir que el guardado asíncrono onFinish en el servidor se complete antes de refrescar
+    await new Promise((r) => setTimeout(r, 600));
+    await refresh();
+  } catch (err: any) {
+    console.error("[Chat] Failed to append agent response:", err);
+    const tempIdx = chat.messages.findIndex((m) => m.id === tempId);
+    if (tempIdx !== -1) {
+      chat.messages.splice(tempIdx, 1);
+    }
+    toast.add({
+      title: "Error al generar respuesta",
+      description: err?.message || "No se pudo procesar la respuesta del agente",
+      icon: "i-lucide-alert-circle",
+      color: "error",
+    });
+  } finally {
+    appendingMap.value[messageId] = false;
+  }
+}
+
 type N8NUITools = UITools;
 type N8NUIDataTypes = UIDataTypes;
 async function handleSubmit(e: Event) {
   e.preventDefault();
-  if (input.value.trim() && !isUploading.value) {
+  const text = input.value.trim();
+  const hasFiles = uploadedFiles.value.length > 0;
+
+  if ((text || hasFiles) && !isUploading.value && !isSavingJournal.value) {
     const parts: UIMessagePart<N8NUIDataTypes, N8NUITools>[] = [];
 
-    if (input.value.trim()) {
-      parts.push({ type: "text", text: input.value });
+    if (text) {
+      parts.push({ type: "text", text });
     }
 
-    if (uploadedFiles.value.length > 0) {
+    if (hasFiles) {
       brainPulse.value = false;
       uploadedFiles.value.forEach((f) => {
         parts.push({
@@ -313,16 +591,18 @@ async function handleSubmit(e: Event) {
       });
     }
 
-    // UIMessagePart<DATA_PARTS, TOOLS>
-    chat.sendMessage({
-      role: "user",
-      parts,
-      usePro: isPro.value,
-    });
     input.value = "";
-    // No limpiamos los archivos aquí inmediatamente porque el transporte fetch
-    // los necesita leer de forma reactiva antes de enviarlos.
-    // Los limpiaremos cuando empiece el streaming o al terminar.
+
+    if (isAgentActive.value) {
+      chat.sendMessage({
+        role: "user",
+        parts,
+        usePro: isPro.value,
+      });
+    } else {
+      await handleSaveJournal(parts, text);
+    }
+    scrollToBottom(true);
   }
 }
 
@@ -446,7 +726,25 @@ watch(
   { immediate: true }
 );
 
+watch(
+  () => data.value?.messages,
+  (newMessages) => {
+    if (newMessages && newMessages.length > 0) {
+      chat.messages = newMessages;
+      scrollToBottom(false);
+    }
+  },
+);
+
+watch(
+  () => chat.messages.length,
+  () => {
+    scrollToBottom(true);
+  },
+);
+
 onMounted(() => {
+  scrollToBottom(false);
   if (data.value?.messages.length === 1 && !route.query.chat_q) {
     chat.regenerate();
   }

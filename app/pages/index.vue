@@ -381,6 +381,8 @@ const {
   getFileExtension,
 } = useAudioRecorder();
 
+import { convertBlobToMp3 } from "~/utils/audio-converter";
+
 const supabase = useSupabaseClient();
 const { setPendingAudio } = usePendingAudio();
 const isUploading = ref(false);
@@ -407,8 +409,8 @@ async function handleStopAndSend() {
 
   isUploading.value = true;
   try {
-    const blob = await getAudioBlob();
-    if (!blob) {
+    const rawBlob = await getAudioBlob();
+    if (!rawBlob) {
       toast.add({
         description: "No hay audio para enviar",
         icon: "i-lucide-alert-circle",
@@ -417,11 +419,12 @@ async function handleStopAndSend() {
       return;
     }
 
-    const userId = user.value?.sub || "";
-    const extension = getFileExtension();
+    // Convert to MP3 with automatic fallback to WebM
+    const { blob, mimeType, extension } = await convertBlobToMp3(rawBlob);
+
+    const userId = (user.value as any)?.id || user.value?.sub || "";
     const fileName = `audio-${Date.now()}.${extension}`;
     const storagePath = getAudioStoragePath(userId, fileName);
-    const mimeType = blob.type || "audio/webm";
 
     // 1. Upload to Supabase
     const { error: uploadError } = await supabase.storage

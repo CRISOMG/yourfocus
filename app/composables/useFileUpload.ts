@@ -22,6 +22,7 @@ type FileUploadResponse = {
 };
 
 import { getAudioStoragePath } from "~~/shared/utils/jornada";
+import { convertBlobToMp3 } from "~/utils/audio-converter";
 
 export function useFileUploadWithStatus() {
   const files = ref<FileWithStatus[]>([]);
@@ -48,15 +49,37 @@ export function useFileUploadWithStatus() {
     // Upload each file
     for (const fileWithStatus of newFilesWithStatus) {
       try {
-        const userId = user.value?.sub || "";
-        const fileName = fileWithStatus.file.name;
-        const contentType = ensureCorrectMimeType(fileWithStatus.file);
+        const userId = (user.value as any)?.id || user.value?.sub || "";
+        let fileToUpload: File | Blob = fileWithStatus.file;
+        let fileName = fileWithStatus.file.name;
+        let contentType = ensureCorrectMimeType(fileWithStatus.file);
+
+        if (
+          contentType.startsWith("audio/") &&
+          !contentType.includes("mpeg") &&
+          !contentType.includes("mp3")
+        ) {
+          try {
+            const { blob, mimeType, extension, isMp3 } =
+              await convertBlobToMp3(fileWithStatus.file);
+            if (isMp3) {
+              const baseName =
+                fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
+              fileName = `${baseName}.${extension}`;
+              contentType = mimeType;
+              fileToUpload = new File([blob], fileName, { type: mimeType });
+            }
+          } catch (e) {
+            console.warn("[useFileUpload] MP3 conversion fallback:", e);
+          }
+        }
+
         const storagePath = getAudioStoragePath(userId, fileName);
 
         // 1. Upload directly to Supabase from Client
         const { error: uploadError } = await supabase.storage
           .from("yourfocus")
-          .upload(storagePath, fileWithStatus.file, {
+          .upload(storagePath, fileToUpload, {
             contentType,
             upsert: true,
           });

@@ -33,6 +33,7 @@ interface SourceUrlPart {
 
 interface ChatBody {
   messages: IncomingMessage[];
+  replyToMessageId?: string | number;
 }
 
 export default defineEventHandler(async (event) => {
@@ -47,7 +48,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const userId = user.sub;
+  const userId = (user as any).id || (user as any).sub;
   const supabase = await serverSupabaseClient<Database>(event);
 
   let messages: IncomingMessage[] = [];
@@ -62,7 +63,7 @@ export default defineEventHandler(async (event) => {
   }
   // 2. Detectar selección de modelo [use pro]
   const lastMessage = messages[messages.length - 1];
-  let isPro = lastMessage?.usePro;
+  let isPro = (body as any)?.usePro ?? lastMessage?.usePro;
 
   // 3. Normalización y extracción de archivos adjuntos
   const sourceFiles: { url: string; mimeType: string; path?: string }[] = [];
@@ -103,10 +104,15 @@ export default defineEventHandler(async (event) => {
       content = standardParts[0].text;
     }
 
+    const finalParts =
+      standardParts.length > 0
+        ? standardParts
+        : [{ type: "text", text: content || " " }];
+
     return {
       ...m,
       content: content,
-      parts: standardParts,
+      parts: finalParts,
     };
   });
 
@@ -212,7 +218,7 @@ export default defineEventHandler(async (event) => {
 
   // 6. Crear provider con modelo dinámico
   const { model, tools, modelId } = createAIProvider(
-    { userId, isPro },
+    { userId, isPro: !!isPro },
     {
       google: {
         projectId: config.google.projectId,
@@ -228,24 +234,35 @@ export default defineEventHandler(async (event) => {
     `[Chat API] Using model: ${modelId} for user: ${userId} (key: ${keySource})`,
   );
 
-  // 7. Persistir mensaje del usuario ANTES de procesar
+  const replyToMessageId = body?.replyToMessageId;
+
+  // 7. Persistir mensaje del usuario ANTES de procesar (solo si no es respuesta diferida a un mensaje existente)
   const userMessageContent =
     lastMessage?.content ||
     (lastMessage?.parts as any[])?.find((p) => p.type === "text")?.text ||
     "";
 
-  try {
-    const result = await supabase.from("n8n_chat_histories").insert({
-      session_id: userId,
-      message: {
+  if (!replyToMessageId) {
+    const userParts =
+      lastMessage?.parts && (lastMessage.parts as any[]).length > 0
+        ? lastMessage.parts
+        : userMessageContent
+        ? [{ type: "text", text: userMessageContent }]
+        : [];
+
+    try {
+      const userMsgId = await insertChatHistory(userId, {
         type: "human",
         content: userMessageContent,
-        additional_kwargs: {},
-      } as any,
-    });
-    console.log("[Chat API] User message persisted:", result);
-  } catch (error) {
-    console.error("[Chat API] Failed to persist user message:", error);
+        additional_kwargs: {
+          parts: userParts,
+          created_at: new Date().toISOString(),
+        },
+      });
+      console.log("[Chat API] User message persisted with id:", userMsgId);
+    } catch (error) {
+      console.error("[Chat API] Failed to persist user message:", error);
+    }
   }
 
   // 8. Ejecutar streamText con AI SDK nativo
@@ -254,7 +271,6 @@ export default defineEventHandler(async (event) => {
     tools,
     messages: modelMessages,
     system: systemPrompt,
-    maxSteps: 40, // Límite de pasos para evitar loops infinitos
     stopWhen: stepCountIs(40), // Permite continuación después de tool calls
     maxRetries: 3,
     onFinish: async (params) => {
@@ -275,6 +291,8 @@ export default defineEventHandler(async (event) => {
           content: params.text,
           additional_kwargs: {
             tool_calls: toolCalls?.length ? toolCalls : undefined,
+            reply_to_id: replyToMessageId || undefined,
+            created_at: new Date().toISOString(),
           },
           response_metadata: {
             model: modelId,
@@ -283,11 +301,8 @@ export default defineEventHandler(async (event) => {
           },
         };
 
-        const result = await supabase.from("n8n_chat_histories").insert({
-          session_id: userId,
-          message: assistantMessage as any,
-        });
-        console.log("[Chat API] Assistant message persisted:", result);
+        const assistantMsgId = await insertChatHistory(userId, assistantMessage);
+        console.log("[Chat API] Assistant message persisted with id:", assistantMsgId);
       } catch (error) {
         console.error("[Chat API] Failed to persist assistant message:", error);
       }
