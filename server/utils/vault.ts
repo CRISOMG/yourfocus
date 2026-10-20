@@ -7,7 +7,7 @@ import {
   createHash,
 } from "crypto";
 
-interface EncryptedPayload {
+export interface EncryptedPayload {
   encrypted: string; // hex-encoded ciphertext
   iv: string; // hex-encoded IV
   tag: string; // hex-encoded auth tag
@@ -17,11 +17,21 @@ interface EncryptedPayload {
  * Derives a 32-byte key from the JWT secret using SHA-256
  */
 function deriveKey(): Buffer {
-  const config = useRuntimeConfig();
-  const secret = config.supabaseJwtSecret as string;
+  let secret: string | undefined;
+  try {
+    const config = useRuntimeConfig();
+    secret = config.supabaseJwtSecret as string;
+  } catch {
+    // In standalone or test context where useRuntimeConfig is unavailable
+  }
+
+  if (!secret) {
+    secret = process.env.SUPABASE_JWT_SECRET;
+  }
+
   if (!secret) {
     throw new Error(
-      "[Vault] SUPABASE_JWT_SECRET is not configured in runtimeConfig",
+      "[Vault] SUPABASE_JWT_SECRET is not configured in runtimeConfig or environment",
     );
   }
   return createHash("sha256").update(secret).digest();

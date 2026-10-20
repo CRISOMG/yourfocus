@@ -107,6 +107,8 @@ export default defineNuxtConfig({
       privateKey: process.env.GOOGLE_PRIVATE_KEY,
       clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
       folderId: process.env.DRIVE_FOLDER_ID,
+      clientId: process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID,
+      clientSecret: process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET,
     },
     n8nWebhookUrl: process.env.N8N_WEBHOOK_URL,
     n8nAuthHeader: process.env.N8N_AUTH_HEADER,

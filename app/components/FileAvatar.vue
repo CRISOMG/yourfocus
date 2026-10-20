@@ -101,49 +101,104 @@ async function handleDownload() {
   }
 }
 
-const audioMenuItems = computed(() => [
-  [
-    {
-      label: "Copiar enlace (1 hora)",
-      icon: "i-lucide-clock",
-      onSelect: () => handleShare(3600, "1 hora"),
-    },
-    {
-      label: "Copiar enlace (24 horas)",
-      icon: "i-lucide-calendar",
-      onSelect: () => handleShare(86400, "24 horas"),
-    },
-    {
-      label: "Copiar enlace (7 días)",
-      icon: "i-lucide-calendar-days",
-      onSelect: () => handleShare(604800, "7 días"),
-    },
-    {
-      label: "Copiar enlace permanente",
-      icon: "i-lucide-infinity",
-      onSelect: () => handleShare(-1, "Permanente"),
-    },
-  ],
-  [
-    {
-      label: "Descargar archivo",
-      icon: "i-lucide-download",
-      onSelect: () => handleDownload(),
-    },
-    {
-      label: "Abrir en nueva pestaña",
-      icon: "i-lucide-external-link",
-      onSelect: () => {
-        if (props.url) {
-          navigateTo(props.url, {
-            external: true,
-            open: { target: "_blank" },
-          });
-        }
+const {
+  isExporting: isExportingDrive,
+  isConnected: isDriveConnected,
+  isAuthorized: isDriveAuthorized,
+  exportToDrive,
+  connectGoogleDrive,
+} = useGoogleDrive();
+
+async function handleExportDrive() {
+  if (!props.storagePath) {
+    toast.add({
+      title: "Audio no disponible",
+      description: "No se encontró la ruta del archivo de audio para exportar",
+      icon: "i-lucide-alert-circle",
+      color: "warning",
+    });
+    return;
+  }
+
+  if (!isDriveConnected.value) {
+    toast.add({
+      title: "Google Drive no conectado",
+      description: "Por favor vincula tu cuenta de Google Drive en las opciones del chat",
+      icon: "i-lucide-cloud-off",
+      color: "warning",
+      actions: [
+        {
+          label: "Conectar Drive",
+          onClick: () => connectGoogleDrive(),
+        },
+      ],
+    });
+    return;
+  }
+
+  await exportToDrive(props.storagePath);
+}
+
+const audioMenuItems = computed(() => {
+  const items = [
+    [
+      {
+        label: "Copiar enlace (1 hora)",
+        icon: "i-lucide-clock",
+        onSelect: () => handleShare(3600, "1 hora"),
       },
-    },
-  ],
-]);
+      {
+        label: "Copiar enlace (24 horas)",
+        icon: "i-lucide-calendar",
+        onSelect: () => handleShare(86400, "24 horas"),
+      },
+      {
+        label: "Copiar enlace (7 días)",
+        icon: "i-lucide-calendar-days",
+        onSelect: () => handleShare(604800, "7 días"),
+      },
+      {
+        label: "Copiar enlace permanente",
+        icon: "i-lucide-infinity",
+        onSelect: () => handleShare(-1, "Permanente"),
+      },
+    ],
+    [
+      {
+        label: "Descargar archivo",
+        icon: "i-lucide-download",
+        onSelect: () => handleDownload(),
+      },
+      {
+        label: "Abrir en nueva pestaña",
+        icon: "i-lucide-external-link",
+        onSelect: () => {
+          if (props.url) {
+            navigateTo(props.url, {
+              external: true,
+              open: { target: "_blank" },
+            });
+          }
+        },
+      },
+    ],
+  ];
+
+  if (props.storagePath) {
+    items.push([
+      {
+        label: isExportingDrive.value
+          ? "Exportando a Google Drive..."
+          : "Exportar a Google Drive",
+        icon: "i-lucide-cloud-upload",
+        disabled: isExportingDrive.value,
+        onSelect: () => handleExportDrive(),
+      },
+    ]);
+  }
+
+  return items;
+});
 </script>
 
 <template>
@@ -195,7 +250,7 @@ const audioMenuItems = computed(() => [
           square
           color="neutral"
           variant="solid"
-          :loading="isGeneratingLink"
+          :loading="isGeneratingLink || isExportingDrive"
           class="rounded-full shadow-md bg-neutral-800 text-white hover:bg-neutral-700"
           title="Compartir o descargar audio"
         />

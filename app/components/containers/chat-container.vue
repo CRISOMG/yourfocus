@@ -72,20 +72,24 @@
               class="flex flex-row gap-2 no-wrap"
             >
               <FileAvatar
-                :name="part?.filename || part?.title || 'File'"
+                :name="(part as any)?.filename || (part as any)?.title || 'File'"
                 :type="
-                  part?.mediaType ||
-                  part?.providerMetadata?.supabaseStorage?.mimeType ||
-                  part?.providerMetadata?.googleDrive?.mimeType ||
-                  'application/octet-stream'
+                  String(
+                    (part as any)?.mediaType ||
+                    (part as any)?.providerMetadata?.supabaseStorage?.mimeType ||
+                    (part as any)?.providerMetadata?.googleDrive?.mimeType ||
+                    'application/octet-stream'
+                  )
                 "
                 :url="
-                  part?.url ||
-                  part?.providerMetadata?.supabaseStorage?.url ||
-                  part?.providerMetadata?.googleDrive?.webViewLink ||
-                  ''
+                  String(
+                    (part as any)?.url ||
+                    (part as any)?.providerMetadata?.supabaseStorage?.url ||
+                    (part as any)?.providerMetadata?.googleDrive?.webViewLink ||
+                    ''
+                  )
                 "
-                :storage-path="part?.providerMetadata?.supabaseStorage?.path"
+                :storage-path="String((part as any)?.providerMetadata?.supabaseStorage?.path || '') || undefined"
               />
             </div>
             <!-- User messages are rendered as plain text (safely escaped by Vue) -->
@@ -366,45 +370,117 @@ const chat = new Chat({
 });
 
 import { useChatPreferences } from "~/composables/useChatPreferences";
-const { isAgentActive, toggleAgent } = useChatPreferences();
+import { useGoogleDrive } from "~/composables/useGoogleDrive";
+
+const {
+  isAgentActive,
+  toggleAgent,
+  isAutoExportDriveActive,
+  toggleAutoExportDrive,
+} = useChatPreferences();
+
+const {
+  isConnected: isDriveConnected,
+  isAuthorized: isDriveAuthorized,
+  isLoading: isDriveLoading,
+  checkStatus: checkDriveStatus,
+  connectGoogleDrive,
+  disconnectGoogleDrive,
+  exportToDrive,
+} = useGoogleDrive();
 
 const isSavingJournal = ref(false);
 const appendingMap = ref<Record<string, boolean>>({});
 
-const chatConfigItems = computed(() => [
-  [
+const chatConfigItems = computed(() => {
+  const items = [
+    [
+      {
+        label: isAgentActive.value
+          ? "Modo Asistente (Respuestas activas)"
+          : "Modo Bitácora (Solo notas/pensamientos)",
+        icon: isAgentActive.value ? "i-lucide-bot" : "i-lucide-notebook-pen",
+        disabled: true,
+      },
+    ],
+    [
+      {
+        label: isAgentActive.value
+          ? "Desactivar Respuestas del Agente"
+          : "Activar Respuestas del Agente",
+        icon: isAgentActive.value
+          ? "i-lucide-toggle-right"
+          : "i-lucide-toggle-left",
+        onSelect: () => {
+          toggleAgent();
+          toast.add({
+            title: isAgentActive.value
+              ? "Modo Asistente Activado"
+              : "Modo Bitácora Activado",
+            description: isAgentActive.value
+              ? "El agente responderá y analizará tus mensajes."
+              : "Tus mensajes y audios se guardarán como notas sin respuestas automáticas.",
+            icon: isAgentActive.value ? "i-lucide-bot" : "i-lucide-notebook-pen",
+            color: isAgentActive.value ? "primary" : "warning",
+          });
+        },
+      },
+    ],
+  ];
+
+  // Google Drive integration controls
+  const driveMenuSection: any[] = [
     {
-      label: isAgentActive.value
-        ? "Modo Asistente (Respuestas activas)"
-        : "Modo Bitácora (Solo notas/pensamientos)",
-      icon: isAgentActive.value ? "i-lucide-bot" : "i-lucide-notebook-pen",
+      label: isDriveConnected.value
+        ? "Google Drive: Conectado"
+        : "Google Drive: Desconectado",
+      icon: isDriveConnected.value
+        ? "i-lucide-check-circle"
+        : "i-lucide-cloud-off",
       disabled: true,
     },
-  ],
-  [
-    {
-      label: isAgentActive.value
-        ? "Desactivar Respuestas del Agente"
-        : "Activar Respuestas del Agente",
-      icon: isAgentActive.value
-        ? "i-lucide-toggle-right"
-        : "i-lucide-toggle-left",
-      onSelect: () => {
-        toggleAgent();
-        toast.add({
-          title: isAgentActive.value
-            ? "Modo Asistente Activado"
-            : "Modo Bitácora Activado",
-          description: isAgentActive.value
-            ? "El agente responderá y analizará tus mensajes."
-            : "Tus mensajes y audios se guardarán como notas sin respuestas automáticas.",
-          icon: isAgentActive.value ? "i-lucide-bot" : "i-lucide-notebook-pen",
-          color: isAgentActive.value ? "primary" : "warning",
-        });
+  ];
+
+  if (isDriveConnected.value) {
+    driveMenuSection.push(
+      {
+        label: isAutoExportDriveActive.value
+          ? "Auto-exportar audios: ON"
+          : "Auto-exportar audios: OFF",
+        icon: isAutoExportDriveActive.value
+          ? "i-lucide-toggle-right"
+          : "i-lucide-toggle-left",
+        onSelect: () => {
+          toggleAutoExportDrive();
+          toast.add({
+            title: isAutoExportDriveActive.value
+              ? "Auto-exportación a Drive Activada"
+              : "Auto-exportación a Drive Desactivada",
+            description: isAutoExportDriveActive.value
+              ? "Tus nuevas notas de audio se guardarán automáticamente en tu Google Drive."
+              : "Los audios no se guardarán automáticamente en Google Drive.",
+            icon: "i-lucide-cloud-upload",
+            color: isAutoExportDriveActive.value ? "success" : "neutral",
+          });
+        },
       },
-    },
-  ],
-]);
+      {
+        label: "Desconectar Google Drive",
+        icon: "i-lucide-log-out",
+        onSelect: () => disconnectGoogleDrive(),
+      },
+    );
+  } else {
+    driveMenuSection.push({
+      label: "Conectar Google Drive",
+      icon: "i-lucide-cloud-upload",
+      onSelect: () => connectGoogleDrive(),
+    });
+  }
+
+  items.push(driveMenuSection);
+  return items;
+});
 
 async function handleSaveJournal(parts: any[], text: string) {
   try {
@@ -582,9 +658,9 @@ async function handleSubmit(e: Event) {
           url: f.driveFile?.webViewLink,
           providerMetadata: {
             supabaseStorage: {
-              path: f.driveFile?.path,
+              path: (f.driveFile as any)?.path,
               url: f.driveFile?.webViewLink,
-              mimeType: f.driveFile?.mimeType,
+              mimeType: (f.driveFile as any)?.mimeType,
             },
           },
         } as SourceUrlUIPart);
@@ -616,6 +692,17 @@ async function handleFilesSelected(selectedFiles: File[]) {
       input.value = result.formatted_id;
       isPro.value = true;
     }
+
+    // Auto-export to Google Drive if active and audio file present
+    if (
+      isAutoExportDriveActive.value &&
+      isDriveConnected.value &&
+      result.audio?.path
+    ) {
+      exportToDrive(result.audio.path).catch((err) => {
+        console.warn("[Auto Export Drive] Error exporting selected audio:", err);
+      });
+    }
     // File parts are already added to the files array by useFileUpload
     // They will be sent as source-url parts in handleSubmit
   }
@@ -632,6 +719,17 @@ function handleAudioUploaded(response: TranscriptionResponse) {
   if (response.formatted_id) {
     input.value = response.formatted_id;
     isPro.value = true;
+  }
+
+  // Auto-export to Google Drive if active
+  if (
+    isAutoExportDriveActive.value &&
+    isDriveConnected.value &&
+    response.audio?.path
+  ) {
+    exportToDrive(response.audio.path).catch((err) => {
+      console.warn("[Auto Export Drive] Error exporting recorded audio:", err);
+    });
   }
 
   // Add audio and text as files to be sent as source-url parts
@@ -745,6 +843,7 @@ watch(
 
 onMounted(() => {
   scrollToBottom(false);
+  checkDriveStatus();
   if (data.value?.messages.length === 1 && !route.query.chat_q) {
     chat.regenerate();
   }
