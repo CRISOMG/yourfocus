@@ -8,12 +8,15 @@
             "blog": "Blog",
             "shop": "Store",
             "language": "Language",
-            "cta": "Get Started"
+            "cta": "Get Started",
+            "goHome": "Go to Home"
         },
         "hero": {
             "headline": "Transform your inner monologue into execution systems",
             "subheadline": "Kaizen-based active knowledge management. Turn your reflections into measurable action.",
             "cta": "Early Access",
+            "goHome": "Enter your workspace",
+            "signedInAs": "Signed in as",
             "emailPlaceholder": "you{'@'}email.com",
             "badge": "First 250 users · $24/year"
         },

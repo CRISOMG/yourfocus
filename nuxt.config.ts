@@ -28,10 +28,17 @@ export default defineNuxtConfig({
 
   i18n: {
     defaultLocale: "es",
+    strategy: "prefix_and_default",
     locales: [
       { code: "es", file: "es.json", name: "Español" },
       { code: "en", file: "en.json", name: "English" },
     ],
+    pages: {
+      inicio: {
+        es: "/inicio",
+        en: "/home",
+      },
+    },
   },
   css: ["~/assets/css/main.css"],
   imports: {
@@ -128,12 +135,21 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: "/login",
       callback: "/callback",
-      include: ["/", "/note/:path*"],
+      include: [
+        "/inicio*",
+        "/es/inicio*",
+        "/en/home*",
+        "/home*",
+        "/note/:path*",
+      ],
       exclude: [
+        "/",
+        "/es",
+        "/en",
+        "/landing*",
         "/request-reset-password",
         "/update-password",
         "/sign-up",
-        "/landing",
       ],
     },
     cookieOptions: {

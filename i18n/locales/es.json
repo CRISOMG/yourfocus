@@ -8,12 +8,15 @@
             "blog": "Blog",
             "shop": "Tienda",
             "language": "Idioma",
-            "cta": "Empezar"
+            "cta": "Empezar",
+            "goHome": "Ir al inicio"
         },
         "hero": {
             "headline": "Transforma tu monólogo interno en sistemas de ejecución",
             "subheadline": "Gestión activa de conocimiento basada en kaizen. Convierte tus reflexiones en acción medible.",
             "cta": "Acceso anticipado",
+            "goHome": "Entrar a tu espacio",
+            "signedInAs": "Sesión iniciada como",
             "emailPlaceholder": "tu{'@'}correo.com",
             "badge": "Primeros 250 usuarios · $2/mes"
         },

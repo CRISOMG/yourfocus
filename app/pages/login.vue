@@ -11,7 +11,9 @@ definePageMeta({
       const { data } = await useSupabaseClient().auth.getSession();
 
       if (data.session) {
-        return navigateTo("/");
+        const nuxtApp = useNuxtApp();
+        const locale = nuxtApp.$i18n?.locale?.value || "es";
+        return navigateTo(locale === "en" ? "/en/home" : "/es/inicio");
       }
     },
   ],

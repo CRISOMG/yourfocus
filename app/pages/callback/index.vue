@@ -46,6 +46,9 @@ onMounted(async () => {
     const type = route.query.type as string;
     const source = route.query.source as string;
 
+    const { locale } = useI18n();
+    const targetHome = locale.value === "en" ? "/en/home" : "/es/inicio";
+
     if (token_hash && type) {
       const { error: verifyError } = await supabase.auth.verifyOtp({
         token_hash,
@@ -54,7 +57,7 @@ onMounted(async () => {
       if (verifyError) throw verifyError;
 
       router.push({
-        path: "/",
+        path: targetHome,
         query: route.query,
       });
       return;
@@ -67,7 +70,7 @@ onMounted(async () => {
       const cleanQuery = { ...route.query };
       delete cleanQuery.connect_drive;
       router.push({
-        path: "/",
+        path: targetHome,
         query: cleanQuery,
       });
       return;
@@ -78,7 +81,7 @@ onMounted(async () => {
       const cleanQuery = { ...route.query };
       delete cleanQuery.connect_drive;
       router.push({
-        path: "/",
+        path: targetHome,
         query: cleanQuery,
       });
       return;
@@ -95,7 +98,7 @@ onMounted(async () => {
           const cleanQuery = { ...route.query };
           delete cleanQuery.connect_drive;
           router.push({
-            path: "/",
+            path: targetHome,
             query: cleanQuery,
           });
         }

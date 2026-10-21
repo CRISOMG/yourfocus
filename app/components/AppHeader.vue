@@ -56,6 +56,10 @@ const supabase = useSupabaseClient();
 const { $pwa } = useNuxtApp();
 const { isOnline, pendingOperations } = useOfflineSync();
 const inboxController = useInboxController();
+const { locale } = useI18n();
+const homePath = computed(() =>
+  locale.value === "en" ? "/en/home" : "/es/inicio",
+);
 
 onMounted(() => {
   if (isLoggedIn.value) {
@@ -135,7 +139,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
 <template>
   <div class="py-4 flex items-baseline justify-between px-2">
     <NuxtLink
-      to="/"
+      :to="homePath"
       class="flex items-baseline hover:opacity-80 transition-opacity"
     >
       <i class="mr-1 w-6 flex self-center">
@@ -172,7 +176,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
         :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
         color="neutral"
         variant="ghost"
-        @click="isDark = !isDark"
+        @click="() => { isDark = !isDark; }"
         aria-label="Toggle color mode"
       />
 

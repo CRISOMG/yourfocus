@@ -79,7 +79,8 @@ export function useAuthController() {
         title: "Success",
         description: "The form has been submitted.",
       });
-      navigateTo("/");
+      const { locale } = useI18n();
+      navigateTo(locale.value === "en" ? "/en/home" : "/es/inicio");
     }
   }
 
@@ -91,6 +92,8 @@ export function useAuthController() {
   }: {
     email: string;
     password: string;
+    username?: string;
+    fullname?: string;
   }) {
     const { data, error } = await supabase.auth.signUp({
       email,
